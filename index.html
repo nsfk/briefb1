@@ -1,1 +1,1481 @@
-hello world
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>B1 Schreibtrainer</title>
+<style>
+/* Layout: exam desk - a sticky exam clock across the top; task and model answer stacked on the left,
+   the lined answer sheet with a red correction margin on the right; correction tabs open below after grading. */
+:root {
+  --desk: #EDF0F5;
+  --paper: #FFFFFF;
+  --ink: #172033;
+  --muted: #586275;
+  --line: #D6DDE9;
+  --margin: #EFB3BB;
+  --blue: #2340C8;
+  --on-blue: #FFFFFF;
+  --blue-soft: #E6EBFF;
+  --red: #C42437;
+  --red-soft: #FCE6E9;
+  --amber: #8F5500;
+  --amber-soft: #FFF0D2;
+  --green: #14714A;
+  --green-soft: #E1F3E8;
+  --scrim: rgb(12 16 23 / 55%);
+  --shadow: 0 1px 2px rgb(23 32 51 / 6%), 0 8px 24px rgb(23 32 51 / 7%);
+  --f-din: "Bahnschrift", "DIN Alternate", "D-DIN", "Arial Narrow", system-ui, sans-serif;
+  --f-ui: "Segoe UI", system-ui, -apple-system, "Roboto", "Helvetica Neue", Arial, sans-serif;
+  --f-sheet: "Cambria", "Charter", "Georgia", "Noto Serif", serif;
+  --lh: 32px;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #0C1017; --paper: #151B26; --ink: #E4E8F0; --muted: #9CA5B7; --line: #283144; --margin: #5E2B35;
+    --blue: #93A6FF; --on-blue: #0C1017; --blue-soft: #1B2442; --red: #FF7482; --red-soft: #3A1B22;
+    --amber: #F0B24B; --amber-soft: #33260E; --green: #58C992; --green-soft: #11301F; --scrim: rgb(0 0 0 / 65%);
+    --shadow: 0 1px 2px rgb(0 0 0 / 45%), 0 8px 24px rgb(0 0 0 / 30%);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --desk: #0C1017; --paper: #151B26; --ink: #E4E8F0; --muted: #9CA5B7; --line: #283144; --margin: #5E2B35;
+  --blue: #93A6FF; --on-blue: #0C1017; --blue-soft: #1B2442; --red: #FF7482; --red-soft: #3A1B22;
+  --amber: #F0B24B; --amber-soft: #33260E; --green: #58C992; --green-soft: #11301F; --scrim: rgb(0 0 0 / 65%);
+  --shadow: 0 1px 2px rgb(0 0 0 / 45%), 0 8px 24px rgb(0 0 0 / 30%);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+[hidden] { display: none !important; }
+body { background: var(--desk); color: var(--ink); font: 15px/1.5 var(--f-ui); -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+b { font-weight: 650; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* ---------- top bar: the exam clock ---------- */
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--paper); border-bottom: 1px solid var(--line); box-shadow: var(--shadow); }
+.topbar-inner { max-width: 1360px; margin: 0 auto; padding: 10px 16px; display: grid; grid-template-columns: minmax(150px, auto) auto minmax(0, 1fr) auto; align-items: center; gap: 10px 26px; }
+.brand-name { font: 600 21px/1.1 var(--f-din); letter-spacing: .01em; }
+.brand-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.clockbox { display: grid; gap: 2px; justify-items: start; }
+.clock { font: 500 54px/1 var(--f-din); font-variant-numeric: tabular-nums; letter-spacing: .02em; color: var(--ink); }
+.clock.warn { color: var(--amber); }
+.clock.crit, .clock.done { color: var(--red); }
+.clock.crit { animation: blink 1s steps(2, jump-none) infinite; }
+@keyframes blink { 50% { opacity: .55; } }
+.clock-meta { display: flex; gap: 8px; align-items: center; font-size: 12px; }
+.controls { display: grid; gap: 8px; min-width: 0; }
+.timeset { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.lbl { font-size: 12px; font-weight: 650; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.timein { width: 64px; height: 34px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); font: 500 17px var(--f-din); font-variant-numeric: tabular-nums; text-align: center; }
+.timein:disabled { opacity: .55; }
+.field-err { color: var(--red); font-size: 13px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { height: 30px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--desk); font-size: 13px; cursor: pointer; }
+.chip:hover:not(:disabled) { border-color: var(--blue); }
+.chip[aria-pressed="true"] { background: var(--blue-soft); border-color: var(--blue); color: var(--ink); font-weight: 650; }
+.chip:disabled { opacity: .5; cursor: not-allowed; }
+.btnrow { display: flex; flex-wrap: wrap; gap: 8px; }
+.toggles { display: grid; gap: 6px; justify-items: start; }
+.progress { height: 4px; background: var(--line); }
+.progress > div { height: 100%; width: 0; background: var(--blue); transition: width .3s linear, background-color .3s; }
+.progress > div.warn { background: var(--amber); }
+.progress > div.crit { background: var(--red); }
+
+/* ---------- controls ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-weight: 650; cursor: pointer; white-space: nowrap; }
+.btn svg { width: 16px; height: 16px; flex: none; }
+.btn:hover:not(:disabled) { border-color: var(--blue); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn-primary { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
+.btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+.btn-danger { color: var(--red); }
+.btn-danger:hover:not(:disabled) { border-color: var(--red); }
+.btn-ghost { border-color: transparent; background: transparent; }
+.btn-sm { min-height: 30px; padding: 0 10px; font-size: 13px; }
+.btn-lg { min-height: 46px; padding: 0 22px; font-size: 16px; }
+.switch { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; user-select: none; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch .track { position: relative; width: 34px; height: 20px; border-radius: 999px; background: var(--line); transition: background .2s; flex: none; }
+.switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--paper); box-shadow: 0 1px 2px rgb(0 0 0 / 25%); transition: transform .2s; }
+.switch input:checked + .track { background: var(--blue); }
+.switch input:checked + .track::after { transform: translateX(14px); }
+.switch input:focus-visible + .track { outline: 2px solid var(--blue); outline-offset: 2px; }
+.switch input:disabled + .track { opacity: .5; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 650; background: var(--desk); color: var(--muted); border: 1px solid var(--line); white-space: nowrap; }
+.pill.ok { background: var(--green-soft); color: var(--green); border-color: transparent; }
+.pill.warn { background: var(--amber-soft); color: var(--amber); border-color: transparent; }
+.pill.bad { background: var(--red-soft); color: var(--red); border-color: transparent; }
+.pill.info { background: var(--blue-soft); color: var(--blue); border-color: transparent; }
+.select { height: 30px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); padding: 0 8px; font-size: 13px; max-width: 220px; }
+
+/* ---------- the desk ---------- */
+.desk, .results, .lower { max-width: 1360px; margin: 0 auto; padding-inline: 16px; }
+.desk { padding-block: 16px; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 16px; align-items: start; }
+.col { display: grid; gap: 16px; min-width: 0; }
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); min-width: 0; position: relative; }
+.panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.panel h2 { margin: 0; font: 600 15px/1.2 var(--f-din); letter-spacing: .06em; text-transform: uppercase; }
+.panel h2 .de { font-weight: 400; color: var(--muted); text-transform: none; letter-spacing: 0; margin-left: 6px; }
+.head-tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+textarea.plain { display: block; width: 100%; border: 0; outline: 0; resize: vertical; padding: 12px 14px; background: var(--paper); color: var(--ink); font: 16px/1.6 var(--f-sheet); border-radius: 0 0 var(--r) var(--r); }
+textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
+.note { margin: 0; padding: 8px 14px 12px; font-size: 13px; color: var(--muted); border-top: 1px dashed var(--line); }
+.cover { display: grid; gap: 4px; place-content: center; text-align: center; min-height: 180px; padding: 16px; color: var(--muted); font-size: 14px;
+  background: repeating-linear-gradient(135deg, var(--desk) 0 10px, var(--paper) 10px 20px); border-radius: 0 0 var(--r) var(--r); }
+.cover strong { color: var(--ink); }
+
+/* the answer sheet: ruled lines + correction margin (Korrekturrand) */
+.sheet-panel:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+.counters { display: flex; gap: 14px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.counters b { color: var(--ink); font: 600 16px var(--f-din); }
+.umlauts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 14px; border-bottom: 1px solid var(--line); }
+.uml { width: 34px; height: 32px; border-radius: 6px; border: 1px solid var(--line); background: var(--desk); font: 18px/1 var(--f-sheet); cursor: pointer; }
+.uml:hover { border-color: var(--blue); }
+.kbd-hint { margin-left: auto; }
+.sheet { display: block; width: 100%; min-height: calc(var(--lh) * 15 + 12px); resize: vertical; border: 0; outline: 0; margin: 0;
+  padding: 6px 60px 6px 22px; font: 18px/var(--lh) var(--f-sheet); color: var(--ink); background-color: var(--paper);
+  background-image:
+    linear-gradient(90deg, transparent calc(100% - 44px), var(--margin) calc(100% - 44px), var(--margin) calc(100% - 42px), transparent calc(100% - 42px)),
+    repeating-linear-gradient(180deg, transparent 0 calc(var(--lh) - 1px), var(--line) calc(var(--lh) - 1px) var(--lh));
+  background-position: 0 0, 0 6px; background-attachment: local; }
+.sheet[readonly] { color: var(--muted); }
+.warnline, .locknote { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 8px 14px; font-size: 13px; border-top: 1px solid var(--line); }
+.warnline { background: var(--amber-soft); color: var(--amber); }
+.locknote { background: var(--red-soft); color: var(--red); font-weight: 600; }
+.sheet-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; border-top: 1px solid var(--line); }
+.steps { margin: 0; padding: 0 14px 14px 34px; display: grid; gap: 2px; }
+
+/* ---------- results ---------- */
+.results { padding-block: 0 16px; }
+.tabs { display: flex; gap: 2px; padding: 0 10px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { padding: 11px 14px 9px; border: 0; border-bottom: 3px solid transparent; background: none; font-weight: 650; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--blue); }
+.pane { padding: 16px; display: grid; gap: 18px; min-width: 0; }
+.pane h3 { margin: 0 0 8px; font: 600 14px/1.2 var(--f-din); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.scorehead { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 28px; }
+.score { display: flex; align-items: baseline; gap: 6px; }
+.score b { font: 600 72px/0.9 var(--f-din); font-variant-numeric: tabular-nums; }
+.score span { font: 500 22px var(--f-din); color: var(--muted); }
+.score.good b { color: var(--green); } .score.mid b { color: var(--amber); } .score.low b { color: var(--red); }
+.formula { font-size: 13px; color: var(--muted); max-width: 46ch; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 10px; }
+.stat { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.stat .v { font: 600 26px/1.1 var(--f-din); font-variant-numeric: tabular-nums; }
+.stat .k { font-size: 12px; color: var(--muted); }
+.checks { display: flex; flex-wrap: wrap; gap: 8px; }
+.leit { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.leit label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.leit input { margin-top: 4px; accent-color: var(--blue); }
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { text-align: left; font-size: 12px; font-weight: 650; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: var(--desk); padding: 8px 10px; white-space: nowrap; }
+.tbl td { padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+.tbl td.num { font-variant-numeric: tabular-nums; text-align: right; }
+.tbl .w { font-family: var(--f-sheet); font-size: 16px; }
+.tbl .w.bad { color: var(--red); text-decoration: underline wavy var(--red); text-underline-offset: 3px; }
+.sugg { display: flex; flex-wrap: wrap; gap: 4px; }
+.sugg span { font-family: var(--f-sheet); font-size: 15px; padding: 0 6px; border-radius: 4px; background: var(--green-soft); color: var(--green); }
+.empty { color: var(--muted); font-size: 14px; margin: 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); align-items: center; }
+.legend i { display: inline-block; width: 22px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+
+/* correction view: teacher marks "R" in red */
+.corr { font: 18px/2.05 var(--f-sheet); white-space: pre-wrap; overflow-wrap: anywhere; padding: 14px 18px; border: 1px solid var(--line); border-radius: 8px; }
+.corr mark, .cmp-text mark { color: inherit; background: none; }
+.corr mark.m-err { background: var(--red-soft); box-shadow: inset 0 -2px 0 var(--red); border-radius: 2px; cursor: pointer; }
+.corr mark.m-hint { box-shadow: inset 0 -2px 0 var(--amber); background: var(--amber-soft); border-radius: 2px; cursor: pointer; }
+.corr sup { font: 700 11px/0 var(--f-din); margin-left: 2px; color: var(--red); }
+.corr mark.m-hint sup { color: var(--amber); }
+
+/* comparison */
+.cmp { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.cmp-col h4 { margin: 0 0 6px; font: 600 13px var(--f-ui); color: var(--muted); }
+.cmp-text { font: 16px/1.95 var(--f-sheet); white-space: pre-wrap; overflow-wrap: anywhere; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; }
+.cmp-text mark.only-a { background: var(--red-soft); box-shadow: inset 0 -2px 0 var(--red); }
+.cmp-text mark.only-b { background: var(--green-soft); box-shadow: inset 0 -2px 0 var(--green); }
+.wordchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.wordchips span { font: 15px var(--f-sheet); padding: 2px 8px; border-radius: 6px; background: var(--green-soft); color: var(--green); }
+
+/* history + settings */
+.lower { padding-block: 0 16px; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: 16px; align-items: start; }
+#histBody { padding: 12px 14px; }
+.trend-up { color: var(--green); font-weight: 650; }
+.trend-down { color: var(--red); font-weight: 650; }
+.settings { display: grid; gap: 8px; padding: 12px 14px 14px; }
+.settings .row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.num { width: 76px; height: 34px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); font: 500 16px var(--f-din); }
+.small-ta { border: 1px solid var(--line) !important; border-radius: 8px !important; font-size: 15px !important; }
+.foot { max-width: 1360px; margin: 0 auto; padding: 4px 16px 28px; font-size: 12px; color: var(--muted); }
+.foot p { margin: 4px 0; max-width: 110ch; }
+
+/* modal, popover, toast */
+.backdrop { position: fixed; inset: 0; z-index: 50; background: var(--scrim); display: grid; place-items: center; padding: 16px; }
+.modal { width: 100%; max-width: 500px; max-height: calc(100% - 32px); overflow: auto; background: var(--paper); color: var(--ink); border-radius: 14px; padding: 22px; box-shadow: var(--shadow); display: grid; gap: 12px; }
+.modal h2 { margin: 0; font: 600 24px/1.15 var(--f-din); }
+.modal .sub { margin: -6px 0 0; font: 500 16px var(--f-din); color: var(--muted); }
+.modal p { margin: 0; }
+.modal.alarm { border-top: 6px solid var(--red); text-align: center; justify-items: center; }
+.modal.alarm h2 { font-size: 40px; color: var(--red); }
+.modal .actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+.modal.alarm .actions { justify-content: center; }
+.pop { position: absolute; z-index: 40; width: max-content; max-width: min(330px, calc(100vw - 32px)); background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 12px 14px; display: grid; gap: 8px; font-size: 14px; }
+.pop .w { font: 600 18px var(--f-sheet); }
+.pop .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.toast { position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 60; max-width: calc(100vw - 32px); background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 8px; font-size: 14px; box-shadow: var(--shadow); }
+
+@media (max-width: 1080px) {
+  .topbar-inner { grid-template-columns: minmax(0, 1fr) auto; }
+  .brand { grid-column: 1 / -1; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .controls { grid-column: 1 / -1; }
+  .toggles { grid-column: 1 / -1; grid-auto-flow: column; justify-content: start; gap: 14px; }
+}
+@media (max-width: 900px) {
+  .desk, .lower { grid-template-columns: minmax(0, 1fr); }
+  .topbar { position: static; }
+}
+@media (max-width: 640px) {
+  .clock { font-size: 44px; }
+  .toggles { grid-auto-flow: row; }
+  .cmp { grid-template-columns: minmax(0, 1fr); }
+  .sheet { padding-right: 52px; font-size: 17px; }
+  .kbd-hint { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-name">B1 Schreibtrainer</div>
+      <div class="brand-sub">Luyện viết thư B1 · Schriftlicher Ausdruck</div>
+    </div>
+    <div class="clockbox">
+      <div id="clock" class="clock" role="timer" aria-label="Thời gian còn lại">30:00</div>
+      <div class="clock-meta"><span id="clockState" class="pill">Sẵn sàng</span><span id="clockTotal" class="muted">Tổng: 30:00</span></div>
+    </div>
+    <div class="controls">
+      <div class="timeset">
+        <label for="timeInput" class="lbl">Thời gian</label>
+        <input id="timeInput" class="timein" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" value="30" aria-describedby="timeHelp">
+        <span id="timeHelp" class="muted small">phút (hoặc phút:giây)</span>
+        <div class="chips" role="group" aria-label="Chọn nhanh thời gian">
+          <button type="button" class="chip" data-time="30">30 phút · telc</button>
+          <button type="button" class="chip" data-time="20">20 phút</button>
+          <button type="button" class="chip" data-time="15">15 phút</button>
+          <button type="button" class="chip" data-time="0:20">Thử 20 giây</button>
+        </div>
+      </div>
+      <div id="timeErr" class="field-err" role="alert" hidden></div>
+      <div class="btnrow">
+        <button type="button" id="btnStart" class="btn btn-primary">
+          <svg id="icoPlay" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4 2.5v11l9-5.5z"/></svg>
+          <svg id="icoPause" viewBox="0 0 16 16" aria-hidden="true" hidden><path fill="currentColor" d="M4 2.5h3v11H4zm5 0h3v11H9z"/></svg>
+          <span>Bắt đầu</span>
+        </button>
+        <button type="button" id="btnReset" class="btn" disabled>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M3.2 8a4.8 4.8 0 1 0 1.5-3.5M3 2.5v2.8h2.8"/></svg>
+          <span>Đặt lại</span>
+        </button>
+        <button type="button" id="btnFull" class="btn btn-ghost" aria-label="Toàn màn hình" title="Toàn màn hình">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="toggles">
+      <label class="switch" title="Tắt gạch đỏ của trình duyệt, che bài mẫu khi đang làm, khóa bài khi hết giờ"><input type="checkbox" id="optExam"><span class="track"></span><span>Chế độ thi</span></label>
+      <label class="switch"><input type="checkbox" id="optSound"><span class="track"></span><span>Âm thanh báo giờ</span></label>
+      <span id="spellStatus" class="pill">Đang tải từ điển…</span>
+    </div>
+  </div>
+  <div class="progress" aria-hidden="true"><div id="progressBar"></div></div>
+</header>
+
+<main class="desk">
+  <div class="col">
+    <section class="panel" aria-labelledby="hTask">
+      <div class="panel-head">
+        <h2 id="hTask">Đề bài <span class="de">Aufgabe</span></h2>
+        <div class="head-tools">
+          <label class="sr-only" for="sampleSel">Chọn đề mẫu</label>
+          <select id="sampleSel" class="select"><option value="">Đề mẫu…</option></select>
+          <button type="button" class="btn btn-sm" data-open="task">Mở file</button>
+        </div>
+      </div>
+      <textarea id="task" class="plain" lang="de" spellcheck="false" rows="10" placeholder="Dán đề bài vào đây. Các ý bắt đầu bằng „–“ hoặc số (1., 2.) sẽ thành danh sách Leitpunkte để tự kiểm tra khi chấm."></textarea>
+      <p id="sampleNote" class="note" hidden>Đây là đề ví dụ. Dán đề của bạn vào ô trên, hoặc mở file .txt / .docx.</p>
+    </section>
+    <section class="panel" aria-labelledby="hModel">
+      <div class="panel-head">
+        <h2 id="hModel">Bài mẫu <span class="de">Musterlösung</span></h2>
+        <div class="head-tools">
+          <button type="button" id="btnModelToggle" class="btn btn-sm" aria-pressed="true">Ẩn</button>
+          <button type="button" class="btn btn-sm" data-open="model">Mở file</button>
+        </div>
+      </div>
+      <textarea id="model" class="plain" lang="de" spellcheck="false" rows="10" placeholder="Dán bài mẫu vào đây. Sau khi chấm, bài của bạn sẽ được so sánh với bài này từng từ một."></textarea>
+      <div id="modelCover" class="cover" hidden>
+        <strong>Bài mẫu đang được che</strong>
+        <span id="modelCoverText"></span>
+      </div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="panel sheet-panel" aria-labelledby="hAnswer">
+      <div class="panel-head">
+        <h2 id="hAnswer">Bài viết của bạn <span class="de">Mein Text</span></h2>
+        <div class="counters" aria-live="polite"><span><b id="cntWords">0</b> từ</span><span><b id="cntSent">0</b> câu</span></div>
+      </div>
+      <div class="umlauts" role="toolbar" aria-label="Chèn chữ tiếng Đức">
+        <button type="button" class="uml" data-ch="ä">ä</button><button type="button" class="uml" data-ch="ö">ö</button><button type="button" class="uml" data-ch="ü">ü</button><button type="button" class="uml" data-ch="ß">ß</button><button type="button" class="uml" data-ch="Ä">Ä</button><button type="button" class="uml" data-ch="Ö">Ö</button><button type="button" class="uml" data-ch="Ü">Ü</button><button type="button" class="uml" data-ch="„" aria-label="Dấu ngoặc kép mở">„</button><button type="button" class="uml" data-ch="“" aria-label="Dấu ngoặc kép đóng">“</button>
+        <span class="muted small kbd-hint">Phím tắt: Alt + A / O / U / S (thêm Shift để viết hoa)</span>
+      </div>
+      <textarea id="answer" class="sheet" lang="de" spellcheck="false" aria-label="Bài viết" placeholder="Liebe Anna,&#10;&#10;vielen Dank für …"></textarea>
+      <p id="imeWarn" class="warnline" hidden>Trong bài có chữ tiếng Việt (ư, ơ, đ hoặc dấu thanh). Bộ gõ tiếng Việt có thể đang bật — hãy chuyển sang chế độ gõ tiếng Anh (E) khi viết tiếng Đức.</p>
+      <p id="lockNote" class="locknote" hidden>Hết giờ — bài viết đã được khóa như trong phòng thi. <button type="button" id="btnUnlock" class="btn btn-sm">Mở khóa để viết tiếp</button></p>
+      <div class="sheet-actions">
+        <button type="button" id="btnGrade" class="btn btn-primary btn-lg">Chấm điểm</button>
+        <button type="button" id="btnDemo" class="btn">Thử với bài ví dụ</button>
+        <button type="button" id="btnNew" class="btn">Bài mới</button>
+        <span class="muted small">Ctrl + Enter để chấm</span>
+      </div>
+      <ol class="steps muted small">
+        <li>Chọn thời gian rồi bấm <b>Bắt đầu</b>. Khi hết giờ, ứng dụng phát chuông và hiện thông báo.</li>
+        <li>Viết bài trên tờ giấy kẻ dòng. Bản nháp được lưu tự động.</li>
+        <li>Bấm <b>Chấm điểm</b> để xem lỗi chính tả, điểm, và so sánh với bài mẫu.</li>
+      </ol>
+    </section>
+  </div>
+</main>
+
+<section id="results" class="results" aria-labelledby="hResults" hidden>
+  <div class="panel">
+    <div class="panel-head">
+      <h2 id="hResults">Kết quả chấm <span class="de">Bewertung</span></h2>
+      <span id="staleNote" class="pill warn" hidden>Bài đã thay đổi sau lần chấm — bấm Chấm điểm để cập nhật</span>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Kết quả chấm">
+      <button type="button" class="tab" role="tab" id="tab-score" aria-controls="pane-score" aria-selected="true">Điểm và lỗi</button>
+      <button type="button" class="tab" role="tab" id="tab-corr" aria-controls="pane-corr" aria-selected="false" tabindex="-1">Bài đã sửa</button>
+      <button type="button" class="tab" role="tab" id="tab-cmp" aria-controls="pane-cmp" aria-selected="false" tabindex="-1">So sánh với bài mẫu</button>
+    </div>
+    <div id="pane-score" class="pane" role="tabpanel" aria-labelledby="tab-score"></div>
+    <div id="pane-corr" class="pane" role="tabpanel" aria-labelledby="tab-corr" hidden></div>
+    <div id="pane-cmp" class="pane" role="tabpanel" aria-labelledby="tab-cmp" hidden></div>
+  </div>
+</section>
+
+<section class="lower">
+  <div class="panel" aria-labelledby="hHist">
+    <div class="panel-head">
+      <h2 id="hHist">Lịch sử <span class="de">Verlauf</span></h2>
+      <button type="button" id="btnClearHist" class="btn btn-sm btn-danger" disabled>Xóa lịch sử</button>
+    </div>
+    <div id="histBody"></div>
+  </div>
+  <div class="panel" aria-labelledby="hSet">
+    <div class="panel-head"><h2 id="hSet">Cài đặt chấm <span class="de">Einstellungen</span></h2></div>
+    <div class="settings">
+      <label for="optK" class="lbl">Trừ điểm cho mỗi lỗi / 100 từ</label>
+      <div class="row"><input id="optK" class="num" type="number" min="1" max="50" step="1"><span id="kExample" class="muted small"></span></div>
+      <label for="optWords" class="lbl">Từ của tôi</label>
+      <textarea id="optWords" class="plain small-ta" rows="5" spellcheck="false" placeholder="Mỗi dòng một từ, ví dụ:&#10;Kien&#10;Merseburg"></textarea>
+      <p class="muted small" style="margin:0">Tên riêng và từ không có trong từ điển. Các từ này không bị tính là lỗi.</p>
+      <p class="muted small" style="margin:0">Bản nháp, lịch sử và cài đặt chỉ được lưu trong trình duyệt này. Bài viết không được gửi đi đâu.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <p>Kiểm tra chính tả bằng Hunspell 1.7.3 (WebAssembly) với từ điển de_DE igerman98 © Björn Jacke (GPL 2/3), cùng một danh sách từ mới bổ sung (App, Homeoffice, vietnamesisch…). Ứng dụng chỉ chấm chính tả (Rechtschreibung), gồm cả viết hoa đầu câu và danh từ viết thường. Ngữ pháp và nội dung không được chấm; khi thi telc, giám khảo còn chấm việc trả lời đủ các ý của đề (Leitpunkte), cách trình bày thư và độ chính xác ngôn ngữ.</p>
+</footer>
+
+<div id="backdrop" class="backdrop" hidden><div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div></div>
+<div id="pop" class="pop" role="dialog" aria-label="Chi tiết lỗi" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<input type="file" id="fileInput" accept=".txt,.md,.docx,text/plain" hidden>
+
+<script>
+(() => {
+'use strict';
+
+/* ===================== helpers ===================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nf1 = new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const nfp = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
+const pct = x => nfp.format(x * 100) + ' %';
+const cap = w => w.charAt(0).toUpperCase() + w.slice(1);
+const BASE_TITLE = document.title;
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('b1st:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('b1st:' + k, JSON.stringify(v)); return true; } catch (e) { return false; } },
+  del(k) { try { localStorage.removeItem('b1st:' + k); } catch (e) { /* storage unavailable */ } }
+};
+function debounce(fn, ms) { let t = 0; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+function fmt(sec) {
+  sec = Math.max(0, Math.ceil(sec - 1e-6));
+  const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+  return (h ? h + ':' + String(m).padStart(2, '0') : String(m).padStart(2, '0')) + ':' + String(s).padStart(2, '0');
+}
+function parseTime(s) {
+  s = String(s || '').trim();
+  let m = s.match(/^(\d{1,3})$/);
+  if (m) return +m[1] * 60;
+  m = s.match(/^(\d{1,3}):(\d{1,2})$/);
+  if (m) return +m[1] * 60 + +m[2];
+  return NaN;
+}
+function dateStr(t) {
+  const d = new Date(t), p = n => String(n).padStart(2, '0');
+  return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+/* ===================== elements & settings ===================== */
+const E = {
+  clock: $('#clock'), clockState: $('#clockState'), clockTotal: $('#clockTotal'), bar: $('#progressBar'),
+  timeInput: $('#timeInput'), timeErr: $('#timeErr'), btnStart: $('#btnStart'), btnReset: $('#btnReset'), btnFull: $('#btnFull'),
+  icoPlay: $('#icoPlay'), icoPause: $('#icoPause'), optExam: $('#optExam'), optSound: $('#optSound'), spell: $('#spellStatus'),
+  task: $('#task'), model: $('#model'), answer: $('#answer'), sampleSel: $('#sampleSel'), sampleNote: $('#sampleNote'),
+  btnModelToggle: $('#btnModelToggle'), modelCover: $('#modelCover'), modelCoverText: $('#modelCoverText'),
+  cntWords: $('#cntWords'), cntSent: $('#cntSent'), imeWarn: $('#imeWarn'), lockNote: $('#lockNote'), btnUnlock: $('#btnUnlock'),
+  btnGrade: $('#btnGrade'), btnDemo: $('#btnDemo'), btnNew: $('#btnNew'),
+  results: $('#results'), staleNote: $('#staleNote'), paneScore: $('#pane-score'), paneCorr: $('#pane-corr'), paneCmp: $('#pane-cmp'),
+  histBody: $('#histBody'), btnClearHist: $('#btnClearHist'), optK: $('#optK'), kExample: $('#kExample'), optWords: $('#optWords'),
+  backdrop: $('#backdrop'), modal: $('#modal'), pop: $('#pop'), toast: $('#toast'), fileInput: $('#fileInput')
+};
+const DEFAULTS = { k: 10, sound: true, exam: true, time: '30', words: [], showModel: true };
+const settings = Object.assign({}, DEFAULTS, store.get('settings', {}));
+if (!Array.isArray(settings.words)) settings.words = [];
+const saveSettings = () => store.set('settings', settings);
+
+/* ===================== sample tasks (original practice prompts) ===================== */
+const SAMPLES = [
+  { id: 'geburtstag', title: 'Einladung zum Geburtstag (thân mật)',
+    task: 'Ihre Freundin Anna hat Sie zu ihrer Geburtstagsparty am Samstag eingeladen. Sie können aber leider nicht kommen.\n\nSchreiben Sie Anna eine E-Mail:\n– Bedanken Sie sich für die Einladung.\n– Erklären Sie, warum Sie nicht kommen können.\n– Machen Sie einen Vorschlag für ein anderes Treffen.\n– Fragen Sie, was sie sich zum Geburtstag wünscht.\n\nDenken Sie an eine passende Anrede, eine Einleitung und einen Schluss.',
+    model: 'Liebe Anna,\n\nvielen Dank für deine Einladung zu deiner Geburtstagsparty am Samstag. Ich habe mich sehr darüber gefreut.\n\nLeider kann ich nicht kommen, weil ich am Wochenende arbeiten muss. Meine Kollegin ist krank, deshalb muss ich ihre Schicht übernehmen. Das tut mir wirklich leid.\n\nHast du vielleicht nächste Woche Zeit? Wir könnten zusammen in unser Lieblingscafé gehen und ein Stück Kuchen essen. Wie wäre es mit Dienstag oder Mittwoch am Abend?\n\nAußerdem möchte ich dir gern etwas schenken. Hast du einen besonderen Wunsch? Vielleicht ein Buch oder etwas für deine neue Wohnung? Schreib mir einfach.\n\nIch wünsche dir eine schöne Party und einen tollen Geburtstag!\n\nViele Grüße\nLisa' },
+  { id: 'kurs', title: 'Deutschkurs am Wochenende (trang trọng)',
+    task: 'Sie haben im Internet eine Anzeige für einen Deutschkurs am Wochenende gelesen. Schreiben Sie an die Sprachschule:\n– Stellen Sie sich kurz vor.\n– Warum möchten Sie den Kurs besuchen?\n– Fragen Sie nach den Kosten und den Kurszeiten.\n– Fragen Sie, ob es am Ende eine Prüfung gibt.\n\nDenken Sie an eine passende Anrede, eine Einleitung und einen Schluss.',
+    model: 'Sehr geehrte Damen und Herren,\n\nich habe im Internet Ihre Anzeige für einen Deutschkurs am Wochenende gelesen und interessiere mich sehr für dieses Angebot.\n\nMein Name ist Lisa Tran. Ich bin 27 Jahre alt und komme aus Vietnam. Seit einem Jahr lebe ich in Leipzig und arbeite als Krankenpflegerin.\n\nIch möchte den Kurs besuchen, weil ich im nächsten Jahr die B1-Prüfung machen möchte. Unter der Woche habe ich leider keine Zeit, deshalb passt ein Kurs am Wochenende sehr gut zu mir.\n\nKönnten Sie mir bitte mitteilen, wie viel der Kurs kostet und wann genau er stattfindet? Außerdem würde ich gern wissen, ob es am Ende des Kurses eine Prüfung gibt.\n\nIch freue mich auf Ihre Antwort.\n\nMit freundlichen Grüßen\nLisa Tran' },
+  { id: 'umzug', title: 'Ein Freund zieht um (thân mật)',
+    task: 'Ihr Freund Jonas zieht bald in Ihre Stadt und sucht eine Wohnung. Schreiben Sie ihm eine E-Mail:\n– Sagen Sie, dass Sie sich über den Umzug freuen.\n– Geben Sie Tipps für die Wohnungssuche.\n– Welchen Stadtteil empfehlen Sie? Warum?\n– Bieten Sie Ihre Hilfe beim Umzug an.', model: '' },
+  { id: 'beschwerde', title: 'Beschwerde über eine Bestellung (trang trọng)',
+    task: 'Sie haben online ein Fahrrad bestellt. Es ist aber beschädigt angekommen. Schreiben Sie an den Kundenservice:\n– Was haben Sie wann bestellt?\n– Beschreiben Sie das Problem.\n– Was erwarten Sie jetzt von der Firma?\n– Bis wann möchten Sie eine Antwort?', model: '' }
+];
+const DEMO_ANSWER = 'Liebe Anna,\n\nvielen Dank fuer deine Einladung zu deiner Geburtstagsparty am Samstag. Ich habe mich sehr gefreut!\n\nLeider kann ich nicht kommen, weil ich am Wochenende arbeiten muss. meine Kollegin ist krank und ich muss ihre Schicht übernehmen. Entschuldiegung, das ich nicht dabei sein kann. Ich bin wirklich traurig.\n\nHast du nächste woche Zeit? Wir könnten zusammen ins Café gehen und Kuchen essen. Vieleicht am Dienstag oder am Mittwoch nach der Arbeit? Ich lade dich natürlich ein.\n\nWas wünschst du dir zum Geburtstag? Ich möchte dir gern etwas schenken, aber ich weiß nicht, was dir gefällt. Vielleicht ein Buch oder eine Pflanze für deine neue Wohnung?\n\nIch wünsche dir eine schöne Party und viel Spaß mit deinen Freunden!\n\nViele Grüsse\nLisa';
+
+/* ===================== spell checker (Hunspell 1.7.3, WebAssembly) ===================== */
+// Words the 2016 dictionary lacks. [word, example]: the new word inflects like the example stem.
+const EXTRA_WORDS = [
+  ['App', 'Auto'], ['Tablet', 'Auto'], ['E-Bike', 'Auto'], ['Selfie', 'Auto'], ['Influencer', 'Lehrer'],
+  ['Messenger', 'Computer'], ['E-Scooter', 'Computer'], ['Homeoffice', 'Büro'], ['Home-Office', 'Büro'],
+  ['Tandempartner', 'Partner'], ['Fahrradweg', 'Weg'], ['posten', 'testen'], ['gepostet', 'getestet'],
+  ['Vietnamesisch', 'Chinesisch'], ['vietnamesisch', 'chinesisch'], ['Coronavirus', 'Virus'],
+  ['Corona'], ['Homeschooling'], ['Onlineshopping'], ['Online-Shopping'], ['Carsharing'], ['WhatsApp'],
+  ['Instagram'], ['TikTok'], ['Netflix'], ['YouTube'], ['Spotify'], ['WG'], ['WGs']
+];
+const Spell = { ready: false, failed: false, h: null, added: new Set(), promise: null };
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Không tải được ' + src));
+    (document.head || document.documentElement).appendChild(s);
+  });
+}
+function setSpellStatus(kind, text, title) {
+  E.spell.className = 'pill ' + kind;
+  E.spell.textContent = text;
+  E.spell.title = title || '';
+}
+function initSpell() {
+  Spell.promise = (async () => {
+    try {
+      if (window.crypto && !crypto.randomUUID) {
+        Crypto.prototype.randomUUID = function () {
+          const b = crypto.getRandomValues(new Uint8Array(16));
+          b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+          const h = Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+          return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+        };
+      }
+      if (!window.HunspellWasm) await loadScript('lib/hunspell.js');
+      if (!window.B1_DICT_DE) await loadScript('lib/dict-de.js');
+      const factory = await window.HunspellWasm.loadModule();
+      const enc = new TextEncoder();
+      const aff = factory.mountBuffer(enc.encode(window.B1_DICT_DE.aff), 'de_DE.aff');
+      const dic = factory.mountBuffer(enc.encode(window.B1_DICT_DE.dic), 'de_DE.dic');
+      const h = factory.create(aff, dic);
+      for (const [w, ex] of EXTRA_WORDS) { try { ex ? h.addWordWithAffix(w, ex) : h.addWord(w); } catch (e) { /* skip */ } }
+      Spell.h = h; Spell.ready = true;
+      syncPersonalWords();
+      setSpellStatus('ok', 'Chính tả: Hunspell · de_DE', 'Hunspell ' + (window.HunspellWasm.HUNSPELL_VERSION || '') + ' · từ điển igerman98 (de_DE) · chạy offline trong trình duyệt');
+    } catch (err) {
+      Spell.failed = true;
+      setSpellStatus('bad', 'Không tải được từ điển', String(err && err.message || err));
+    }
+  })();
+  return Spell.promise;
+}
+function syncPersonalWords() {
+  if (!Spell.ready) return;
+  const want = new Set(settings.words);
+  for (const w of Spell.added) if (!want.has(w)) { try { Spell.h.removeWord(w); } catch (e) { /* ignore */ } Spell.added.delete(w); }
+  for (const w of want) if (!Spell.added.has(w)) { try { Spell.h.addWord(w); Spell.added.add(w); } catch (e) { /* ignore */ } }
+}
+function suggest(w) {
+  if (!Spell.ready) return [];
+  let list = [];
+  if (/^\p{Lu}\p{Ll}/u.test(w)) {                        // capitalised (e.g. sentence start): the lowercase word gives better hints
+    try { list = Spell.h.suggest(w.toLowerCase()).map(cap); } catch (e) { list = []; }
+  }
+  try { list = list.concat(Spell.h.suggest(w)); } catch (e) { /* keep what we have */ }
+  const low = w.toLowerCase(), lowN = noUml(low), seen = new Set(), ranked = [];
+  list.forEach((s, i) => {
+    if (s === w || /^-|-$/.test(s) || seen.has(s)) return;  // drop compound fragments like "-woche"
+    seen.add(s);
+    const sl = s.toLowerCase();
+    ranked.push({ s, i, d: Math.min(osa(low, sl), osa(lowN, noUml(sl))) });
+  });
+  ranked.sort((a, b) => a.d - b.d || a.i - b.i);
+  return ranked.slice(0, 4).map(x => x.s);
+}
+
+/* ===================== text analysis ===================== */
+const WORD_RE = /\p{L}+(?:[-'’]\p{L}+)*/gu;
+function tokenize(text) {
+  const out = [];
+  for (const m of text.matchAll(WORD_RE)) out.push({ w: m[0], s: m.index, e: m.index + m[0].length });
+  return out;
+}
+function countWords(text) {
+  const parts = text.match(/\S+/g) || [];
+  let n = 0;
+  for (const p of parts) if (/[\p{L}\p{N}]/u.test(p)) n++;
+  return n;
+}
+const ABBR = new Set(('z.b. d.h. u.a. o.ä. u.ä. usw. bzw. ca. evtl. ggf. inkl. exkl. nr. str. tel. vgl. etc. bspw. sog. dr. prof. hr. fr. frl. abs. abt. allg. bzgl. ebd. geb. ges. i.a. m.e. max. min. mio. mrd. o.g. s. s.o. s.u. u.u. v.a. z.t. zzgl. jh. jan. feb. febr. apr. jun. jul. aug. sep. sept. okt. nov. dez. mo. di. mi. do. sa. so. std. sek. bsp. u.s.w. i.d.r. u.v.m. vs. ps. p.s. lg. mfg. tsd. zb.').split(' '));
+function isSentenceStart(text, toks, i) {
+  const gapStart = i ? toks[i - 1].e : 0;
+  const gap = text.slice(gapStart, toks[i].s);
+  if (/\p{N}/u.test(gap)) return false;                 // "am 3. mai", "ca. 20 Leute"
+  if (i === 0) return true;                              // first word of the text
+  if (/\.\.|…/.test(gap)) return false;                  // ellipsis: unclear
+  const p = gap.search(/[.!?]/);
+  if (p < 0) return false;
+  if (p === 0 && gap[0] === '.') {                       // dot right after the previous word: abbreviation?
+    let s = gapStart - 1;
+    while (s >= 0 && /[\p{L}.]/u.test(text[s])) s--;
+    const run = text.slice(s + 1, gapStart + 1);
+    if (ABBR.has(run.toLowerCase()) || /^(\p{L}\.)+$/u.test(run)) return false;
+  }
+  return true;
+}
+function spellOk(t, text) {
+  const w = t.w;
+  if (/^\p{Lu}{2,}$/u.test(w.replace(/[-'’]/g, ''))) return true;   // ALL CAPS (OK, USA) – ignored like in Word
+  if (!Spell.ready) return true;
+  const h = Spell.h;
+  if (h.spell(w)) return true;
+  if (text[t.e] === '.' && h.spell(w + '.')) return true;             // usw. bzw. ca. Nr.
+  const ap = w.match(/^(\p{L}+)['’]s$/u);                               // geht's, gibt's
+  if (ap && h.spell(ap[1])) return true;
+  return false;
+}
+function sentenceCount(text, toks) {
+  let n = 0;
+  for (let i = 0; i < toks.length; i++) if (isSentenceStart(text, toks, i)) n++;
+  return n;
+}
+// Optimal string alignment distance (Damerau–Levenshtein without repeated edits)
+function osa(a, b) {
+  const la = a.length, lb = b.length;
+  if (!la) return lb; if (!lb) return la;
+  const d = Array.from({ length: la + 1 }, (_, i) => { const r = new Array(lb + 1).fill(0); r[0] = i; return r; });
+  for (let j = 0; j <= lb; j++) d[0][j] = j;
+  for (let i = 1; i <= la; i++) for (let j = 1; j <= lb; j++) {
+    const c = a[i - 1] === b[j - 1] ? 0 : 1;
+    let v = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + c);
+    if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, d[i - 2][j - 2] + 1);
+    d[i][j] = v;
+  }
+  return d[la][lb];
+}
+const noUml = s => s.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
+function similarFromModel(word, uniq) {                   // uniq: [{low, form}] of the model answer
+  const w = word.toLowerCase(), wn = noUml(w);
+  const limit = Math.min(3, Math.max(1, Math.floor(w.length / 3)));
+  let best = limit + 1, hit = '';
+  for (const u of uniq) {
+    if (u.form === word || Math.abs(u.low.length - w.length) > limit + 1) continue;
+    const d = Math.min(osa(w, u.low), osa(wn, noUml(u.low)));
+    if (d < best) { best = d; hit = u.form; }
+  }
+  return hit;
+}
+const STOP = new Set(('der die das den dem des ein eine einer eines einem einen und oder aber denn weil dass wenn als wie ich du er sie es wir ihr mich dich sich uns euch mir dir ihm ihn ihnen mein meine meinen meinem meiner dein deine deinen deinem deiner sein seine seinen seinem seiner ihre ihren ihrem ihrer unser unsere unseren unserem euer eure ist bin bist sind seid war waren habe hast hat haben hatte hatten wird werde wirst werden würde würden kann kannst können könnte möchte möchten muss musst müssen soll sollen will wollen nicht kein keine keinen keinem keiner auch noch schon sehr nur mit von zum zur bei nach aus für auf über unter vor durch gegen ohne seit hier dort dann jetzt also doch nein diese dieser dieses diesen diesem alle alles viel viele mehr etwas gern gerne sehr ganz immer einmal mal bitte danke dich euch ihnen').split(' '));
+function uniqueWords(toks) {
+  const seen = new Map();
+  for (const t of toks) { const low = t.w.toLowerCase(); if (!seen.has(low)) seen.set(low, { low, form: t.w }); }
+  return [...seen.values()];
+}
+function compareTexts(textA, textB) {
+  const A = tokenize(textA), B = tokenize(textB);
+  const a = A.map(t => t.w.toLowerCase()), b = B.map(t => t.w.toLowerCase());
+  const n = a.length, m = b.length;
+  const inA = new Uint8Array(n), inB = new Uint8Array(m);
+  let lcs = 0;
+  if (n && m && n * m <= 6e6) {
+    const W = m + 1, dp = new Uint16Array((n + 1) * W);
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+      dp[i * W + j] = a[i] === b[j] ? dp[(i + 1) * W + j + 1] + 1 : Math.max(dp[(i + 1) * W + j], dp[i * W + j + 1]);
+    lcs = dp[0];
+    let i = 0, j = 0;
+    while (i < n && j < m) {
+      if (a[i] === b[j]) { inA[i] = inB[j] = 1; i++; j++; }
+      else if (dp[(i + 1) * W + j] >= dp[i * W + j + 1]) i++;
+      else j++;
+    }
+  }
+  const setA = new Set(a), uniqB = uniqueWords(B);
+  const used = uniqB.filter(u => setA.has(u.low)).length;
+  const missing = uniqB.filter(u => !setA.has(u.low) && u.low.length >= 4 && !STOP.has(u.low)).slice(0, 40).map(u => u.form);
+  return { A, B, inA, inB, lcs, similarity: (n + m) ? 2 * lcs / (n + m) : 0, coverage: uniqB.length ? used / uniqB.length : 0, used, uniqB, missing };
+}
+function letterChecks(text) {
+  const lines = text.split('\n').map(s => s.trim()).filter(Boolean);
+  const betreff = /^betreff\s*:/i.test(lines[0] || '');
+  const anredeLine = betreff ? (lines[1] || '') : (lines[0] || '');
+  const anrede = /^(Sehr geehrte[rs]?|Liebe[rs]?|Hallo|Hi|Hey|Guten Tag|Guten Morgen|Moin|Servus)\b/i.test(anredeLine);
+  const formal = /^(Sehr geehrte[rs]?|Guten Tag)\b/i.test(anredeLine) ? 'formal' : (/^(Liebe[rs]?|Hallo|Hi|Hey|Moin|Servus)\b/i.test(anredeLine) ? 'informal' : '');
+  const komma = anrede && /[,!]\s*$/.test(anredeLine);
+  const tail = lines.slice(-3).join(' ');
+  const gruss = /(viele|liebe|herzliche|beste|freundliche|schöne|sonnige|liebste)\s+gr(ü|ue)(ß|ss)e|mit freundlichen gr(ü|ue)(ß|ss)en|mit besten gr(ü|ue)(ß|ss)en|bis bald|bis dann|bis später|alles gute|tschüss|tschüs|\blg\b|\bvg\b/i.test(tail);
+  const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim()).length;
+  return { betreff, anrede, komma, gruss, formal, paragraphs };
+}
+const HINT_TEXT = {
+  dass: '„das“ đứng sau dấu phẩy: nếu mở đầu một mệnh đề nội dung (…, dass ich komme) thì phải viết „dass“. Nếu là đại từ quan hệ (das Buch, das ich lese) thì „das“ là đúng.',
+  seid: '„seid“ là động từ sein (ihr seid). Nếu muốn nói „từ khi / đã … rồi“ thì viết „seit“ (seit zwei Jahren).',
+  seit: 'Sau „ihr“ thường là động từ „seid“ (ihr seid), không phải „seit“.',
+  wenn: '„wen“ = ai (Akkusativ). Nếu muốn nói „khi / nếu“ thì viết „wenn“.',
+  wieder: '„wider“ = chống lại. Nếu muốn nói „lại / lần nữa“ thì viết „wieder“.',
+  viel: '„fiel“ là quá khứ của fallen. Nếu muốn nói „nhiều“ thì viết „viel“.',
+  formalDu: 'Thư trang trọng (Sehr geehrte …) nên xưng „Sie / Ihnen / Ihr“, không dùng „du“.',
+  formalSie: 'Thư trang trọng: đại từ xưng hô với người nhận phải viết hoa (Sie, Ihnen, Ihr). Viết thường chỉ đúng khi nói về „cô ấy / họ“.',
+  informalSie: 'Thư thân mật (Liebe/Lieber/Hallo): thường xưng „du“ (dir, dich, dein), không dùng „Sie“.'
+};
+function findHints(text, toks, errIdx, formal) {
+  const out = [];
+  for (let i = 0; i < toks.length; i++) {
+    if (errIdx.has(i)) continue;
+    const w = toks[i].w, lw = w.toLowerCase(), prev = i ? toks[i - 1].w.toLowerCase() : '';
+    const gap = text.slice(i ? toks[i - 1].e : 0, toks[i].s);
+    let key = '';
+    if (lw === 'das' && /,\s*$/.test(gap)) key = 'dass';
+    else if (lw === 'seid' && prev !== 'ihr') key = 'seid';
+    else if (lw === 'seit' && prev === 'ihr') key = 'seit';
+    else if (lw === 'wen') key = 'wenn';
+    else if (lw === 'wider') key = 'wieder';
+    else if (lw === 'fiel') key = 'viel';
+    else if (formal === 'formal' && /^(du|dich|dir|dein|deine|deinen|deinem|deiner|deines)$/.test(lw)) key = 'formalDu';
+    else if (formal === 'formal' && /^(sie|ihnen|ihr|ihre|ihren|ihrem|ihrer|ihres)$/.test(w) && !isSentenceStart(text, toks, i)) key = 'formalSie';
+    else if (formal === 'informal' && /^(Sie|Ihnen|Ihre|Ihren|Ihrem|Ihrer|Ihres)$/.test(w) && !isSentenceStart(text, toks, i)) key = 'informalSie';
+    if (key) out.push({ i, s: toks[i].s, e: toks[i].e, w, key });
+  }
+  return out;
+}
+function leitpunkte(task) {
+  const out = [];
+  for (const line of task.split('\n')) {
+    const m = line.trim().match(/^(?:[-–—•*·▪]|\d+[.)])\s*(.+)$/u);
+    if (m && m[1].length > 2) out.push(m[1].trim());
+  }
+  return out.slice(0, 8);
+}
+function analyze(text, task, model) {
+  const toks = tokenize(text);
+  const words = countWords(text);
+  const byKey = new Map(), occ = [], errIdx = new Set();
+  for (let i = 0; i < toks.length; i++) {
+    const t = toks[i];
+    let type = '';
+    if (!spellOk(t, text)) type = 'R';
+    else if (/^\p{Ll}/u.test(t.w) && isSentenceStart(text, toks, i)) type = 'G';
+    if (!type) continue;
+    const key = type + '|' + t.w;
+    let u = byKey.get(key);
+    if (!u) { u = { key, w: t.w, type, n: 0, sugg: [], similar: '' }; byKey.set(key, u); }
+    u.n++;
+    occ.push({ s: t.s, e: t.e, u });
+    errIdx.add(i);
+  }
+  const uniq = [...byKey.values()];
+  const modelUniq = model.trim() ? uniqueWords(tokenize(model)) : [];
+  for (const u of uniq) {
+    u.sugg = u.type === 'G' ? [cap(u.w)] : suggest(u.w);
+    if (modelUniq.length && u.type === 'R') u.similar = similarFromModel(u.w, modelUniq);
+  }
+  const letter = letterChecks(text);
+  const hints = findHints(text, toks, errIdx, letter.formal);
+  const errors = occ.length;
+  const fq = words ? errors * 100 / words : 0;                      // Fehlerquotient
+  const score = Math.max(0, Math.round(100 - settings.k * fq));
+  const sentences = sentenceCount(text, toks);
+  return {
+    text, task, model, words, sentences, toks, occ, uniq, hints, letter, errors, fq, score, k: settings.k,
+    vocab: uniqueWords(toks).length, spellReady: Spell.ready,
+    cmp: model.trim() ? compareTexts(text, model) : null, leit: leitpunkte(task)
+  };
+}
+
+/* ===================== timer ===================== */
+const T = { state: 'idle', total: 1800, endAt: 0, remaining: 1800, warned5: false, warned1: false, unlocked: false };
+const STATE_LABEL = { idle: 'Sẵn sàng', running: 'Đang làm bài', paused: 'Tạm dừng', done: 'Hết giờ', stopped: 'Đã nộp bài' };
+const STATE_KIND = { idle: '', running: 'info', paused: 'warn', done: 'bad', stopped: 'ok' };
+let lastShownSec = -1;
+function remaining() { return T.state === 'running' ? (T.endAt - Date.now()) / 1000 : T.remaining; }
+function persistTimer() {
+  store.set('timer', { state: T.state, total: T.total, endAt: T.endAt, remaining: T.remaining, warned5: T.warned5, warned1: T.warned1, unlocked: T.unlocked });
+}
+function renderClock() {
+  const r = remaining();
+  const shown = T.state === 'idle' ? T.total : Math.max(0, r);
+  const sec = Math.ceil(shown - 1e-6);
+  E.clock.textContent = fmt(shown);
+  const warn = T.state !== 'idle' && T.state !== 'stopped' && r <= 300 && r > 60;
+  const crit = (T.state === 'running' || T.state === 'paused') && r <= 60;
+  E.clock.classList.toggle('warn', warn);
+  E.clock.classList.toggle('crit', crit);
+  E.clock.classList.toggle('done', T.state === 'done');
+  const frac = T.state === 'idle' ? 0 : Math.min(1, Math.max(0, 1 - Math.max(0, r) / T.total));
+  E.bar.style.width = (frac * 100).toFixed(2) + '%';
+  E.bar.classList.toggle('warn', warn);
+  E.bar.classList.toggle('crit', crit || T.state === 'done');
+  if (sec !== lastShownSec) {
+    lastShownSec = sec;
+    if (T.state === 'running' || T.state === 'paused') document.title = fmt(shown) + ' · ' + BASE_TITLE;
+    else if (!flashTimer) document.title = BASE_TITLE;
+  }
+}
+function applyTimerUI() {
+  const st = T.state;
+  E.clockState.textContent = STATE_LABEL[st];
+  E.clockState.className = 'pill ' + STATE_KIND[st];
+  E.clockTotal.textContent = 'Tổng: ' + fmt(T.total);
+  const label = { idle: 'Bắt đầu', running: 'Tạm dừng', paused: 'Tiếp tục', done: 'Bắt đầu lại', stopped: 'Bắt đầu lại' }[st];
+  E.btnStart.querySelector('span').textContent = label;
+  E.icoPlay.hidden = st === 'running';
+  E.icoPause.hidden = st !== 'running';
+  E.btnStart.classList.toggle('btn-primary', st !== 'running');
+  E.btnReset.disabled = st === 'idle';
+  const editable = st === 'idle' || st === 'done' || st === 'stopped';
+  E.timeInput.disabled = !editable;
+  $$('.chip[data-time]').forEach(c => { c.disabled = !editable; c.setAttribute('aria-pressed', String(parseTime(c.dataset.time) === parseTime(E.timeInput.value))); });
+  E.btnGrade.textContent = (st === 'running' || st === 'paused') ? 'Nộp bài và chấm điểm' : 'Chấm điểm';
+  renderClock();
+  applyExam();
+}
+function validTimeInput() {
+  const sec = parseTime(E.timeInput.value);
+  const ok = sec >= 5 && sec <= 36000;
+  E.timeErr.hidden = ok;
+  if (!ok) E.timeErr.textContent = 'Thời gian không hợp lệ. Nhập số phút (ví dụ 30) hoặc phút:giây (ví dụ 0:20), từ 5 giây đến 600 phút.';
+  return ok ? sec : 0;
+}
+function startTimer() {
+  const sec = validTimeInput();
+  if (!sec) { E.timeInput.focus(); return; }
+  settings.time = E.timeInput.value.trim(); saveSettings();
+  T.total = sec; T.remaining = sec; T.endAt = Date.now() + sec * 1000; T.state = 'running';
+  T.warned5 = sec <= 300; T.warned1 = sec <= 60; T.unlocked = false;
+  stopFlash(); scheduleAlarms(sec); startTicking(); persistTimer(); applyTimerUI();
+  E.answer.focus();
+}
+function pauseTimer() {
+  if (T.state !== 'running') return;
+  T.remaining = Math.max(0, remaining()); T.state = 'paused';
+  cancelAlarms(); stopTicking(); persistTimer(); applyTimerUI();
+}
+function resumeTimer() {
+  if (T.state !== 'paused') return;
+  T.endAt = Date.now() + T.remaining * 1000; T.state = 'running';
+  scheduleAlarms(T.remaining); startTicking(); persistTimer(); applyTimerUI();
+}
+function stopTimer() {                                   // submitted before the time was up
+  if (T.state !== 'running' && T.state !== 'paused') return;
+  T.remaining = Math.max(0, remaining()); T.state = 'stopped';
+  cancelAlarms(); stopTicking(); persistTimer(); applyTimerUI();
+}
+function resetTimer() {
+  cancelAlarms(); stopTicking(); stopFlash();
+  T.state = 'idle'; T.total = validTimeInput() || parseTime(settings.time) || 1800; T.remaining = T.total; T.unlocked = false;
+  persistTimer(); applyTimerUI();
+}
+function finishTimer(silent) {                           // time is up
+  T.state = 'done'; T.remaining = 0;
+  stopTicking(); persistTimer();
+  if (!silent) playEndIfNeeded();
+  applyTimerUI();
+  showTimeUp();
+  if (document.hidden) flashTitle();
+}
+function tick() {
+  if (T.state !== 'running') return;
+  const r = remaining();
+  if (r <= 0) { finishTimer(false); return; }
+  if (!T.warned5 && r <= 300) { T.warned5 = true; persistTimer(); toast('Còn 5 phút.'); }
+  if (!T.warned1 && r <= 60) { T.warned1 = true; persistTimer(); toast('Còn 1 phút — hãy viết lời chào kết.'); }
+  renderClock();
+}
+let tickWorker = null, tickInterval = 0;
+function startTicking() {
+  stopTicking();
+  try {
+    if (!tickWorker) {
+      const src = 'let i=0;onmessage=function(e){clearInterval(i);if(e.data)i=setInterval(function(){postMessage(1)},250)}';
+      tickWorker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+      tickWorker.onmessage = tick;
+    }
+    tickWorker.postMessage(1);
+  } catch (e) { tickWorker = null; }
+  tickInterval = setInterval(tick, 250);                  // main-thread backup
+  tick();
+}
+function stopTicking() {
+  if (tickWorker) tickWorker.postMessage(0);
+  clearInterval(tickInterval); tickInterval = 0;
+}
+let flashTimer = 0;
+function flashTitle() {
+  stopFlash();
+  let on = false;
+  flashTimer = setInterval(() => { document.title = (on = !on) ? 'HẾT GIỜ · ' + BASE_TITLE : BASE_TITLE; }, 900);
+}
+function stopFlash() { if (flashTimer) { clearInterval(flashTimer); flashTimer = 0; } document.title = BASE_TITLE; }
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { stopFlash(); tick(); } });
+
+/* ---- sound: alarms are scheduled on the audio clock, so they ring on time even in a background tab ---- */
+let actx = null, scheduled = [], endAudioAt = 0;
+function audio() {
+  if (!settings.sound) return null;
+  try {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+  } catch (e) { actx = null; }
+  return actx;
+}
+function tone(at, freq, dur, vol) {
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(freq, at);
+  g.gain.setValueAtTime(0.0001, at);
+  g.gain.exponentialRampToValueAtTime(vol, at + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(at); o.stop(at + dur + 0.05);
+  scheduled.push(o);
+  o.onended = () => { scheduled = scheduled.filter(x => x !== o); try { g.disconnect(); } catch (e) { /* ignore */ } };
+}
+const PATTERNS = {
+  warn5: [[0, 880, .22]],
+  warn1: [[0, 880, .18], [.28, 880, .18]],
+  end: [[0, 659, .38], [.42, 880, .38], [.84, 1047, .7], [1.9, 659, .38], [2.32, 880, .38], [2.74, 1047, .7], [3.8, 659, .38], [4.22, 880, .38], [4.64, 1047, .9]]
+};
+function pattern(name, at) { for (const [dt, f, d] of PATTERNS[name]) tone(at + dt, f, d, name === 'end' ? 0.32 : 0.22); }
+function scheduleAlarms(rem) {
+  cancelAlarms();
+  const a = audio();
+  if (!a) return;
+  const now = a.currentTime + 0.02;
+  if (rem > 300.5) pattern('warn5', now + rem - 300);
+  if (rem > 60.5) pattern('warn1', now + rem - 60);
+  endAudioAt = now + rem;
+  pattern('end', endAudioAt);
+}
+function cancelAlarms() {
+  for (const o of scheduled) { try { o.onended = null; o.stop(0); o.disconnect(); } catch (e) { /* already stopped */ } }
+  scheduled = []; endAudioAt = 0;
+}
+function playEndIfNeeded() {
+  const a = audio();
+  if (!a) return;
+  if (endAudioAt && a.currentTime >= endAudioAt - 0.3 && a.currentTime < endAudioAt + 6) return;   // already ringing on schedule
+  cancelAlarms();
+  pattern('end', a.currentTime + 0.05);
+}
+
+/* ===================== exam mode, model answer visibility ===================== */
+function applyExam() {
+  const active = T.state === 'running' || T.state === 'paused';
+  E.optExam.checked = settings.exam;
+  E.optExam.disabled = active;
+  E.optSound.checked = settings.sound;
+  E.answer.spellcheck = !settings.exam;
+  const locked = settings.exam && T.state === 'done' && !T.unlocked;
+  E.answer.readOnly = locked;
+  E.lockNote.hidden = !locked;
+  const covered = settings.exam && active;
+  const showModel = settings.showModel && !covered;
+  E.model.hidden = !showModel;
+  E.modelCover.hidden = showModel;
+  E.modelCoverText.textContent = covered ? 'Trong chế độ thi, bài mẫu được che cho đến khi bạn nộp bài hoặc hết giờ.' : 'Bấm „Hiện“ để xem bài mẫu.';
+  E.btnModelToggle.disabled = covered;
+  E.btnModelToggle.textContent = settings.showModel ? 'Ẩn' : 'Hiện';
+  E.btnModelToggle.setAttribute('aria-pressed', String(settings.showModel));
+  $('[data-open="model"]').disabled = covered;
+  E.sampleSel.disabled = covered;
+}
+
+/* ===================== modal, popover, toast ===================== */
+let modalResolve = null, lastFocus = null;
+function openModal({ title, sub = '', html = '', buttons = [], kind = '' }) {
+  closePop();
+  if (modalResolve) { const r = modalResolve; modalResolve = null; r(null); }
+  lastFocus = document.activeElement;
+  E.modal.className = 'modal ' + kind;
+  E.modal.innerHTML = `<h2 id="modalTitle">${esc(title)}</h2>${sub ? `<p class="sub">${esc(sub)}</p>` : ''}${html}<div class="actions"></div>`;
+  const box = $('.actions', E.modal);
+  return new Promise(resolve => {
+    modalResolve = resolve;
+    buttons.forEach((b, idx) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn ' + (b.primary ? 'btn-primary btn-lg' : b.danger ? 'btn-danger' : '');
+      btn.textContent = b.label;
+      btn.addEventListener('click', () => closeModal(b.value !== undefined ? b.value : idx));
+      box.appendChild(btn);
+    });
+    E.backdrop.hidden = false;
+    const focusBtn = $('.btn-primary', box) || $('button', box);
+    if (focusBtn) focusBtn.focus();
+  });
+}
+function closeModal(value) {
+  E.backdrop.hidden = true;
+  const r = modalResolve; modalResolve = null;
+  if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch (e) { /* ignore */ }
+  if (r) r(value);
+}
+E.backdrop.addEventListener('click', e => { if (e.target === E.backdrop && !E.modal.classList.contains('alarm')) closeModal(null); });
+function confirmBox(title, text, okLabel, danger) {
+  return openModal({ title, html: `<p>${esc(text)}</p>`, buttons: [{ label: 'Hủy', value: false }, { label: okLabel, value: true, primary: !danger, danger }] }).then(v => v === true);
+}
+let toastTimer = 0;
+function toast(msg) {
+  E.toast.textContent = msg; E.toast.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { E.toast.hidden = true; }, 3200);
+}
+function closePop() { E.pop.hidden = true; E.pop.innerHTML = ''; }
+function openPop(anchor, html) {
+  E.pop.innerHTML = html; E.pop.hidden = false;
+  const r = anchor.getBoundingClientRect(), pw = E.pop.offsetWidth, ph = E.pop.offsetHeight;
+  let left = r.left + window.scrollX, top = r.bottom + window.scrollY + 6;
+  left = Math.max(window.scrollX + 16, Math.min(left, window.scrollX + document.documentElement.clientWidth - pw - 16));
+  if (r.bottom + ph + 12 > window.innerHeight && r.top - ph - 8 > 0) top = r.top + window.scrollY - ph - 6;
+  E.pop.style.left = left + 'px'; E.pop.style.top = top + 'px';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (!E.pop.hidden) closePop();
+    else if (!E.backdrop.hidden && !E.modal.classList.contains('alarm')) closeModal(null);
+  }
+});
+document.addEventListener('click', e => {
+  if (!E.pop.hidden && !E.pop.contains(e.target) && !e.target.closest('mark[data-k], mark[data-h]')) closePop();
+});
+function showTimeUp() {
+  const w = countWords(E.answer.value);
+  const locked = settings.exam && !T.unlocked;
+  openModal({
+    kind: 'alarm', title: 'Hết giờ!', sub: 'Die Zeit ist um.',
+    html: `<p>Bạn đã viết <b>${w}</b> từ trong ${esc(fmt(T.total))}.</p>` + (locked ? '<p class="muted small">Bài viết đã được khóa như trong phòng thi. Bạn vẫn có thể mở khóa để viết tiếp.</p>' : ''),
+    buttons: [{ label: 'Để sau', value: 'later' }, { label: 'Chấm điểm ngay', value: 'grade', primary: true }]
+  }).then(v => { stopFlash(); if (v === 'grade') grade(); });
+}
+
+/* ===================== editor ===================== */
+let lastTextarea = E.answer;
+[E.task, E.model, E.answer].forEach(ta => ta.addEventListener('focus', () => { lastTextarea = ta; }));
+function insertAtCaret(ta, str) {
+  if (!ta || ta.readOnly || ta.hidden) return;
+  ta.focus();
+  let ok = false;
+  try { ok = document.execCommand('insertText', false, str); } catch (e) { ok = false; }
+  if (!ok) {
+    const s = ta.selectionStart, e = ta.selectionEnd;
+    ta.setRangeText(str, s, e, 'end');
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}
+$$('.uml').forEach(b => {
+  b.addEventListener('mousedown', e => e.preventDefault());        // keep the caret in the text
+  b.addEventListener('click', () => insertAtCaret(lastTextarea, b.dataset.ch));
+});
+const ALT_KEYS = { KeyA: 'ä', KeyO: 'ö', KeyU: 'ü', KeyS: 'ß' };
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && !e.altKey && e.key === 'Enter') { e.preventDefault(); grade(); return; }
+  if (e.altKey && !e.ctrlKey && !e.metaKey && e.target instanceof HTMLTextAreaElement && ALT_KEYS[e.code]) {
+    e.preventDefault();
+    const ch = ALT_KEYS[e.code];
+    insertAtCaret(e.target, e.shiftKey && ch !== 'ß' ? ch.toUpperCase() : ch);
+  }
+});
+const VN_RE = /[đĐơƠưƯăĂẠ-ỹ]/;
+function updateCounters() {
+  const text = E.answer.value;
+  E.cntWords.textContent = countWords(text);
+  E.cntSent.textContent = sentenceCount(text, tokenize(text));
+  E.imeWarn.hidden = !VN_RE.test(text);
+  if (lastResult) E.staleNote.hidden = text === lastResult.text && E.model.value === lastResult.model;
+}
+const saveDraft = debounce(() => store.set('draft', { task: E.task.value, model: E.model.value, answer: E.answer.value }), 400);
+const updateCountersSoon = debounce(updateCounters, 120);
+E.answer.addEventListener('input', () => { updateCountersSoon(); saveDraft(); });
+E.task.addEventListener('input', () => { E.sampleNote.hidden = true; saveDraft(); });
+E.model.addEventListener('input', () => { saveDraft(); if (lastResult) E.staleNote.hidden = E.answer.value === lastResult.text && E.model.value === lastResult.model; });
+
+/* ===================== files (.txt / .docx) ===================== */
+async function readText(file) {
+  const buf = await file.arrayBuffer();
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e) { return new TextDecoder('windows-1252').decode(buf); }
+}
+async function readDocx(file) {
+  const u8 = new Uint8Array(await file.arrayBuffer());
+  const dv = new DataView(u8.buffer);
+  let eocd = -1;
+  for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  if (eocd < 0) throw new Error('File .docx bị hỏng hoặc không phải file Word.');
+  const count = dv.getUint16(eocd + 10, true);
+  let p = dv.getUint32(eocd + 16, true), entry = null;
+  const dec = new TextDecoder();
+  for (let k = 0; k < count && p + 46 <= u8.length; k++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true);
+    const nlen = dv.getUint16(p + 28, true), xlen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+    if (dec.decode(u8.subarray(p + 46, p + 46 + nlen)) === 'word/document.xml') { entry = { method, csize, off }; break; }
+    p += 46 + nlen + xlen + clen;
+  }
+  if (!entry) throw new Error('Không tìm thấy nội dung văn bản trong file .docx.');
+  const start = entry.off + 30 + dv.getUint16(entry.off + 26, true) + dv.getUint16(entry.off + 28, true);
+  const data = u8.subarray(start, start + entry.csize);
+  let xmlBytes;
+  if (entry.method === 0) xmlBytes = data;
+  else if (entry.method === 8 && typeof DecompressionStream !== 'undefined') {
+    const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    xmlBytes = new Uint8Array(await new Response(stream).arrayBuffer());
+  } else throw new Error('Trình duyệt này không giải nén được file .docx. Hãy mở file trong Word và copy nội dung.');
+  const xml = new DOMParser().parseFromString(dec.decode(xmlBytes), 'application/xml');
+  const NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+  const paras = [];
+  for (const para of xml.getElementsByTagNameNS(NS, 'p')) {
+    if (para.parentNode && para.parentNode.closest && para.parentNode.closest('p')) continue;
+    let s = '';
+    for (const node of para.getElementsByTagNameNS(NS, '*')) {
+      if (node.localName === 't') s += node.textContent;
+      else if (node.localName === 'tab') s += '\t';
+      else if (node.localName === 'br' || node.localName === 'cr') s += '\n';
+    }
+    paras.push(s);
+  }
+  return paras.join('\n');
+}
+function cleanImported(t) {
+  return t.replace(/\r\n?/g, '\n').replace(/ /g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+let fileTarget = null;
+$$('[data-open]').forEach(b => b.addEventListener('click', () => { fileTarget = b.dataset.open === 'task' ? E.task : E.model; E.fileInput.value = ''; E.fileInput.click(); }));
+async function importFile(file, target) {
+  try {
+    const raw = /\.docx$/i.test(file.name) ? await readDocx(file) : await readText(file);
+    const text = cleanImported(raw);
+    if (!text) { toast('File không có nội dung văn bản.'); return; }
+    target.value = text;
+    target.dispatchEvent(new Event('input', { bubbles: true }));
+    if (target === E.model && !settings.showModel && E.model.hidden) toast(`Đã nhập bài mẫu (${countWords(text)} từ). Bài mẫu đang ẩn.`);
+    else toast(`Đã nhập „${file.name}“ (${countWords(text)} từ).`);
+  } catch (err) { toast(err.message || 'Không đọc được file.'); }
+}
+E.fileInput.addEventListener('change', () => { const f = E.fileInput.files && E.fileInput.files[0]; if (f && fileTarget) importFile(f, fileTarget); });
+[E.task, E.model].forEach(ta => {
+  ta.addEventListener('dragover', e => { if (e.dataTransfer && [...e.dataTransfer.types].includes('Files')) e.preventDefault(); });
+  ta.addEventListener('drop', e => { const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) { e.preventDefault(); importFile(f, ta); } });
+});
+
+/* ===================== grading & results ===================== */
+let lastResult = null, currentAttempt = null;
+function timeUsed() {
+  if (T.state === 'idle') return null;
+  return { used: Math.round(T.total - Math.max(0, remaining())), total: T.total };
+}
+async function grade() {
+  closePop();
+  if (!E.backdrop.hidden) closeModal(null);
+  const text = E.answer.value;
+  if (!countWords(text)) { toast('Bài viết đang trống. Hãy viết bài trước khi chấm.'); E.answer.focus(); return; }
+  if (T.state === 'running' || T.state === 'paused') {
+    const ok = await confirmBox('Nộp bài và chấm điểm?', `Đồng hồ sẽ dừng ở ${fmt(remaining())}. Thời gian đã dùng được ghi vào kết quả.`, 'Nộp bài');
+    if (!ok) return;
+    stopTimer();
+  }
+  E.btnGrade.disabled = true;
+  const label = E.btnGrade.textContent;
+  E.btnGrade.textContent = Spell.ready ? 'Đang chấm…' : 'Đang tải từ điển…';
+  try {
+    if (!Spell.ready && !Spell.failed && Spell.promise) await Promise.race([Spell.promise, new Promise(r => setTimeout(r, 15000))]);
+    await new Promise(r => setTimeout(r, 20));
+    const res = analyze(text, E.task.value, E.model.value);
+    res.time = timeUsed();
+    res.at = Date.now();
+    lastResult = res;
+    saveAttempt(res, true);
+    renderResults(res);
+    E.results.hidden = false;
+    selectTab('tab-score');
+    E.results.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  } finally {
+    E.btnGrade.disabled = false;
+    E.btnGrade.textContent = label;
+    applyTimerUI();
+  }
+}
+function regrade() {                                     // after "Từ của tôi" changed: same attempt, updated marks
+  if (!lastResult) return;
+  const res = analyze(lastResult.text, lastResult.task, lastResult.model);
+  res.time = lastResult.time; res.at = lastResult.at;
+  lastResult = res;
+  saveAttempt(res, false);
+  renderResults(res);
+  E.staleNote.hidden = E.answer.value === res.text && E.model.value === res.model;
+}
+function ratingOf(score) {
+  if (score >= 90) return ['Rất tốt', 'ok', 'good'];
+  if (score >= 75) return ['Tốt', 'ok', 'good'];
+  if (score >= 50) return ['Trung bình', 'warn', 'mid'];
+  return ['Cần luyện thêm', 'bad', 'low'];
+}
+function chk(ok, yes, no) { return `<span class="pill ${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✗'} ${esc(ok ? yes : no)}</span>`; }
+function renderResults(res) {
+  E.staleNote.hidden = true;
+  const [rating, pillKind, scoreKind] = ratingOf(res.score);
+  const t = res.time;
+  const L = res.letter;
+  const errRows = res.uniq.map((u, idx) => `
+    <tr>
+      <td class="num">${idx + 1}</td>
+      <td><span class="w bad">${esc(u.w)}</span></td>
+      <td class="num">${u.n}</td>
+      <td>${u.sugg.length ? `<div class="sugg">${u.sugg.map(s => `<span>${esc(s)}</span>`).join('')}</div>` : '<span class="muted">—</span>'}</td>
+      ${res.cmp ? `<td>${u.similar ? `<span class="w">${esc(u.similar)}</span>` : '<span class="muted">—</span>'}</td>` : ''}
+      <td>${u.type === 'G' ? 'Viết hoa đầu câu' : 'Chính tả'}</td>
+      <td>${u.type === 'R' ? `<button type="button" class="btn btn-sm" data-addword="${esc(u.w)}">Thêm vào Từ của tôi</button>` : ''}</td>
+    </tr>`).join('');
+  const hintItems = res.hints.map(h => `<li><b class="w">${esc(h.w)}</b> — ${esc(HINT_TEXT[h.key])}</li>`).join('');
+  E.paneScore.innerHTML = `
+    <div class="scorehead">
+      <div class="score ${scoreKind}"><b>${res.spellReady ? res.score : '—'}</b><span>/ 100</span></div>
+      <div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill ${pillKind}">${esc(rating)}</span><span class="muted small">${esc(dateStr(res.at))}</span></div>
+        <p class="formula">Điểm = 100 − ${res.k} × Fehlerquotient (số lỗi trên 100 từ) = 100 − ${res.k} × ${nf1.format(res.fq)}${res.score === 0 && 100 - res.k * res.fq < 0 ? ', thấp nhất là 0' : ''}.</p>
+        ${res.spellReady ? '' : '<p class="formula" style="color:var(--red)">Từ điển chưa tải được nên chưa kiểm tra chính tả. Hãy tải lại trang.</p>'}
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="v">${res.words}</div><div class="k">Số từ</div></div>
+      <div class="stat"><div class="v">${res.errors}</div><div class="k">Lỗi chính tả (${res.uniq.length} từ khác nhau)</div></div>
+      <div class="stat"><div class="v">${nf1.format(res.fq)}</div><div class="k">Fehlerquotient · lỗi / 100 từ</div></div>
+      <div class="stat"><div class="v">${t ? esc(fmt(t.used)) : '—'}</div><div class="k">${t ? 'Thời gian đã dùng / ' + esc(fmt(t.total)) : 'Không bấm giờ'}</div></div>
+      <div class="stat"><div class="v">${res.sentences}</div><div class="k">Câu (ước tính)</div></div>
+      <div class="stat"><div class="v">${res.sentences ? nf1.format(res.words / res.sentences) : '—'}</div><div class="k">Từ trung bình mỗi câu</div></div>
+    </div>
+    <div>
+      <h3>Hình thức thư</h3>
+      <div class="checks">
+        ${chk(L.anrede, 'Có lời chào đầu thư (Anrede)', 'Thiếu lời chào đầu thư (Anrede)')}
+        ${L.anrede ? chk(L.komma, 'Có dấu phẩy sau lời chào', 'Thiếu dấu phẩy sau lời chào') : ''}
+        ${chk(L.gruss, 'Có lời chào cuối thư (Grußformel)', 'Thiếu lời chào cuối thư (Grußformel)')}
+        <span class="pill info">${L.paragraphs} đoạn văn</span>
+        ${L.formal ? `<span class="pill">${L.formal === 'formal' ? 'Thư trang trọng (Sie)' : 'Thư thân mật (du)'}</span>` : ''}
+      </div>
+    </div>
+    ${res.leit.length ? `<div><h3>Các ý của đề (Leitpunkte) — tự đánh dấu</h3><ul class="leit">${res.leit.map((p, i) => `<li><label><input type="checkbox" id="lp${i}"><span>${esc(p)}</span></label></li>`).join('')}</ul></div>` : ''}
+    <div>
+      <h3>Danh sách lỗi</h3>
+      ${res.uniq.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th>Từ trong bài</th><th>Lần</th><th>Gợi ý sửa</th>${res.cmp ? '<th>Trong bài mẫu</th>' : ''}<th>Loại</th><th></th></tr></thead><tbody>${errRows}</tbody></table></div>`
+        : `<p class="empty">${res.spellReady ? 'Không tìm thấy lỗi chính tả nào. Rất tốt!' : 'Chưa kiểm tra được chính tả.'}</p>`}
+    </div>
+    ${hintItems ? `<div><h3>Nên tự kiểm tra lại (không trừ điểm)</h3><ul style="margin:0;padding-left:20px;display:grid;gap:6px">${hintItems}</ul></div>` : ''}`;
+
+  // correction view
+  const marks = res.occ.map(o => ({ s: o.s, e: o.e, cls: 'm-err', sup: 'R', k: res.uniq.indexOf(o.u), h: -1 }))
+    .concat(res.hints.map((h, idx) => ({ s: h.s, e: h.e, cls: 'm-hint', sup: '?', k: -1, h: idx })))
+    .sort((a, b) => a.s - b.s);
+  let html = '', pos = 0;
+  for (const m of marks) {
+    if (m.s < pos) continue;
+    html += esc(res.text.slice(pos, m.s));
+    const attr = m.k >= 0 ? `data-k="${m.k}"` : `data-h="${m.h}"`;
+    html += `<mark class="${m.cls}" ${attr} tabindex="0">${esc(res.text.slice(m.s, m.e))}<sup aria-hidden="true">${m.sup}</sup></mark>`;
+    pos = m.e;
+  }
+  html += esc(res.text.slice(pos));
+  E.paneCorr.innerHTML = `
+    <div class="legend"><span><i style="background:var(--red-soft);box-shadow:inset 0 -2px 0 var(--red)"></i>R — lỗi chính tả (Rechtschreibung), bấm vào để xem gợi ý</span><span><i style="background:var(--amber-soft);box-shadow:inset 0 -2px 0 var(--amber)"></i>? — nên tự kiểm tra, không trừ điểm</span></div>
+    <div class="corr" lang="de">${html}</div>`;
+
+  // comparison
+  if (!res.cmp) {
+    E.paneCmp.innerHTML = `<p class="empty">Chưa có bài mẫu. Dán bài mẫu vào ô „Bài mẫu“ (hoặc bấm „Mở file“), rồi bấm Chấm điểm lại để so sánh từng từ.</p>`;
+  } else {
+    const c = res.cmp;
+    const col = (text, toks, inSet, cls) => {
+      let out = '', p = 0;
+      toks.forEach((tk, i) => { out += esc(text.slice(p, tk.s)); out += inSet[i] ? esc(tk.w) : `<mark class="${cls}">${esc(tk.w)}</mark>`; p = tk.e; });
+      return out + esc(text.slice(p));
+    };
+    E.paneCmp.innerHTML = `
+      <div class="stats">
+        <div class="stat"><div class="v">${pct(c.similarity)}</div><div class="k">Độ giống (cùng từ, cùng thứ tự)</div></div>
+        <div class="stat"><div class="v">${pct(c.coverage)}</div><div class="k">Từ vựng của bài mẫu bạn đã dùng (${c.used}/${c.uniqB.length})</div></div>
+        <div class="stat"><div class="v">${res.words} / ${countWords(res.model)}</div><div class="k">Số từ: bài bạn / bài mẫu</div></div>
+      </div>
+      ${c.missing.length ? `<div><h3>Từ hay trong bài mẫu mà bài bạn chưa dùng</h3><div class="wordchips" lang="de">${c.missing.map(w => `<span>${esc(w)}</span>`).join('')}</div></div>` : ''}
+      <div class="legend"><span><i style="background:var(--red-soft);box-shadow:inset 0 -2px 0 var(--red)"></i>chỉ có trong bài bạn</span><span><i style="background:var(--green-soft);box-shadow:inset 0 -2px 0 var(--green)"></i>chỉ có trong bài mẫu</span><span>Chữ không tô: có ở cả hai bài, cùng thứ tự.</span></div>
+      <div class="cmp">
+        <div class="cmp-col"><h4>Bài của bạn</h4><div class="cmp-text" lang="de">${col(res.text, c.A, c.inA, 'only-a')}</div></div>
+        <div class="cmp-col"><h4>Bài mẫu</h4><div class="cmp-text" lang="de">${col(res.model, c.B, c.inB, 'only-b')}</div></div>
+      </div>`;
+  }
+}
+function errorPopHtml(u) {
+  return `<div class="w">${esc(u.w)}</div>
+    <div class="muted small">${u.type === 'G' ? 'Đầu câu phải viết hoa (Großschreibung am Satzanfang).' : 'Lỗi chính tả (Rechtschreibung).'} Xuất hiện ${u.n} lần.</div>
+    ${u.sugg.length ? `<div><div class="lbl">Gợi ý sửa</div><div class="sugg">${u.sugg.map(s => `<span>${esc(s)}</span>`).join('')}</div></div>` : '<div class="muted small">Từ điển không có gợi ý.</div>'}
+    ${u.similar ? `<div><div class="lbl">Trong bài mẫu</div><span class="w" style="font-size:16px">${esc(u.similar)}</span></div>` : ''}
+    ${u.type === 'R' ? `<div class="row"><button type="button" class="btn btn-sm" data-addword="${esc(u.w)}">Đây là từ đúng — thêm vào Từ của tôi</button></div>` : ''}`;
+}
+E.paneCorr.addEventListener('click', e => {
+  const m = e.target.closest('mark');
+  if (!m || !lastResult) return;
+  if (m.dataset.k !== undefined) openPop(m, errorPopHtml(lastResult.uniq[+m.dataset.k]));
+  else if (m.dataset.h !== undefined) { const h = lastResult.hints[+m.dataset.h]; openPop(m, `<div class="w">${esc(h.w)}</div><div class="small">${esc(HINT_TEXT[h.key])}</div><div class="muted small">Gợi ý kiểm tra, không trừ điểm.</div>`); }
+});
+E.paneCorr.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('mark')) { e.preventDefault(); e.target.click(); } });
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-addword]');
+  if (!b) return;
+  addPersonalWord(b.dataset.addword);
+});
+function addPersonalWord(w) {
+  if (!w || settings.words.includes(w)) return;
+  settings.words.push(w); saveSettings();
+  E.optWords.value = settings.words.join('\n');
+  syncPersonalWords(); closePop(); regrade();
+  toast(`Đã thêm „${w}“ vào Từ của tôi. Kết quả đã được chấm lại.`);
+}
+function selectTab(id) {
+  $$('.tab').forEach(t => {
+    const on = t.id === id;
+    t.setAttribute('aria-selected', String(on));
+    t.tabIndex = on ? 0 : -1;
+    $('#' + t.getAttribute('aria-controls')).hidden = !on;
+  });
+  closePop();
+}
+$$('.tab').forEach(t => {
+  t.addEventListener('click', () => selectTab(t.id));
+  t.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const tabs = $$('.tab'), i = tabs.indexOf(t), n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+    selectTab(n.id); n.focus();
+  });
+});
+
+/* ===================== history ===================== */
+function firstLine(s) { const l = (s || '').split('\n').map(x => x.trim()).find(Boolean) || ''; return l.length > 70 ? l.slice(0, 68) + '…' : l; }
+function saveAttempt(res, isNew) {
+  const hist = store.get('history', []);
+  const entry = { id: isNew || !currentAttempt ? Date.now().toString(36) : currentAttempt, t: res.at, task: firstLine(res.task), taskFull: res.task, text: res.text,
+    words: res.words, errors: res.errors, fq: res.fq, score: res.spellReady ? res.score : null, used: res.time ? res.time.used : null, total: res.time ? res.time.total : null };
+  currentAttempt = entry.id;
+  const i = hist.findIndex(h => h.id === entry.id);
+  if (i >= 0) hist[i] = entry; else hist.unshift(entry);
+  if (hist.length > 100) hist.length = 100;
+  store.set('history', hist);
+  renderHistory();
+}
+function renderHistory() {
+  const hist = store.get('history', []);
+  E.btnClearHist.disabled = !hist.length;
+  if (!hist.length) {
+    E.histBody.innerHTML = '<p class="empty">Chưa có lần chấm nào. Mỗi lần bấm Chấm điểm, kết quả (điểm, số lỗi, thời gian) sẽ được lưu ở đây để bạn theo dõi tiến bộ.</p>';
+    return;
+  }
+  const rows = hist.map((h, i) => {
+    const prev = hist[i + 1];
+    let trend = '';
+    if (prev && h.score != null && prev.score != null && h.score !== prev.score) trend = h.score > prev.score ? `<span class="trend-up">↑ ${h.score - prev.score}</span>` : `<span class="trend-down">↓ ${prev.score - h.score}</span>`;
+    const kind = h.score == null ? '' : h.score >= 75 ? 'ok' : h.score >= 50 ? 'warn' : 'bad';
+    return `<tr>
+      <td style="white-space:nowrap">${esc(dateStr(h.t))}</td>
+      <td lang="de">${esc(h.task || '—')}</td>
+      <td class="num">${h.words}</td>
+      <td class="num">${h.errors}</td>
+      <td class="num"><span class="pill ${kind}">${h.score == null ? '—' : h.score}</span> ${trend}</td>
+      <td class="num">${h.used != null ? esc(fmt(h.used)) + ' / ' + esc(fmt(h.total)) : '—'}</td>
+      <td><button type="button" class="btn btn-sm" data-reopen="${esc(h.id)}">Mở lại</button></td>
+    </tr>`;
+  }).join('');
+  E.histBody.innerHTML = `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Ngày</th><th>Đề</th><th>Từ</th><th>Lỗi</th><th>Điểm</th><th>Thời gian</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+E.histBody.addEventListener('click', async e => {
+  const b = e.target.closest('[data-reopen]');
+  if (!b) return;
+  const h = store.get('history', []).find(x => x.id === b.dataset.reopen);
+  if (!h) return;
+  if (T.state === 'running' || T.state === 'paused') { toast('Đồng hồ đang chạy. Hãy nộp bài hoặc đặt lại đồng hồ trước.'); return; }
+  if (E.answer.value.trim() && E.answer.value !== h.text) {
+    const ok = await confirmBox('Mở lại bài cũ?', 'Bài đang viết trên tờ giấy sẽ được thay bằng bài của lần chấm này.', 'Mở lại');
+    if (!ok) return;
+  }
+  E.answer.value = h.text || '';
+  if (h.taskFull) E.task.value = h.taskFull;
+  E.answer.dispatchEvent(new Event('input')); E.task.dispatchEvent(new Event('input'));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  toast('Đã mở lại bài. Bấm Chấm điểm để xem lại kết quả.');
+});
+E.btnClearHist.addEventListener('click', async () => {
+  if (await confirmBox('Xóa toàn bộ lịch sử?', 'Tất cả kết quả đã lưu trong trình duyệt này sẽ bị xóa. Không thể hoàn tác.', 'Xóa lịch sử', true)) {
+    store.del('history'); renderHistory(); toast('Đã xóa lịch sử.');
+  }
+});
+
+/* ===================== settings ===================== */
+function renderKExample() {
+  const k = settings.k;
+  E.kExample.textContent = `Ví dụ: 150 từ, 3 lỗi → ${nf1.format(2)} lỗi/100 từ → ${Math.max(0, Math.round(100 - k * 2))} điểm`;
+}
+E.optK.addEventListener('change', () => {
+  const v = Math.round(+E.optK.value);
+  settings.k = v >= 1 && v <= 50 ? v : DEFAULTS.k;
+  E.optK.value = settings.k; saveSettings(); renderKExample();
+  if (lastResult) regrade();
+});
+E.optWords.addEventListener('change', () => {
+  settings.words = [...new Set(E.optWords.value.split(/[\n,;]+/).map(s => s.trim()).filter(s => /^[\p{L}][\p{L}'’.-]*$/u.test(s)))];
+  E.optWords.value = settings.words.join('\n'); saveSettings(); syncPersonalWords();
+  if (lastResult) regrade();
+});
+E.optExam.addEventListener('change', () => { settings.exam = E.optExam.checked; saveSettings(); applyExam(); });
+E.optSound.addEventListener('change', () => {
+  settings.sound = E.optSound.checked; saveSettings();
+  if (!settings.sound) cancelAlarms();
+  else if (T.state === 'running') scheduleAlarms(remaining());
+});
+E.btnModelToggle.addEventListener('click', () => { settings.showModel = !settings.showModel; saveSettings(); applyExam(); });
+
+/* ===================== buttons ===================== */
+E.btnStart.addEventListener('click', () => {
+  if (T.state === 'running') pauseTimer();
+  else if (T.state === 'paused') resumeTimer();
+  else startTimer();
+});
+E.btnReset.addEventListener('click', async () => {
+  if ((T.state === 'running' || T.state === 'paused') && !(await confirmBox('Đặt lại đồng hồ?', 'Lượt làm bài đang chạy sẽ bị hủy. Bài viết vẫn được giữ nguyên.', 'Đặt lại', true))) return;
+  resetTimer();
+});
+E.timeInput.addEventListener('input', () => {
+  const sec = parseTime(E.timeInput.value);
+  if (sec >= 5 && sec <= 36000) { E.timeErr.hidden = true; if (T.state !== 'running' && T.state !== 'paused') { T.state = 'idle'; T.total = sec; T.remaining = sec; persistTimer(); applyTimerUI(); } }
+});
+E.timeInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (T.state !== 'running' && T.state !== 'paused') startTimer(); } });
+$$('.chip[data-time]').forEach(c => c.addEventListener('click', () => { E.timeInput.value = c.dataset.time; E.timeInput.dispatchEvent(new Event('input')); }));
+E.btnFull.addEventListener('click', async () => {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.documentElement.requestFullscreen();
+  } catch (e) { toast('Trình duyệt không cho phép toàn màn hình ở đây. Bạn có thể nhấn F11.'); }
+});
+E.btnUnlock.addEventListener('click', () => { T.unlocked = true; persistTimer(); applyExam(); E.answer.focus(); });
+E.btnGrade.addEventListener('click', grade);
+E.btnDemo.addEventListener('click', async () => {
+  if (T.state === 'running' || T.state === 'paused') { toast('Đồng hồ đang chạy. Hãy nộp bài hoặc đặt lại đồng hồ trước.'); return; }
+  if (E.answer.value.trim() && !(await confirmBox('Dùng bài ví dụ?', 'Bài đang viết sẽ được thay bằng một bài ví dụ có vài lỗi điển hình.', 'Dùng bài ví dụ'))) return;
+  loadSample('geburtstag', true);
+  E.answer.value = DEMO_ANSWER;
+  E.answer.dispatchEvent(new Event('input'));
+  grade();
+});
+E.btnNew.addEventListener('click', async () => {
+  if (E.answer.value.trim() && !(await confirmBox('Bắt đầu bài mới?', 'Tờ giấy sẽ được xóa trắng và đồng hồ được đặt lại. Đề bài và bài mẫu vẫn giữ nguyên.', 'Bài mới', true))) return;
+  E.answer.value = ''; E.answer.dispatchEvent(new Event('input'));
+  resetTimer(); lastResult = null; currentAttempt = null; E.results.hidden = true;
+  E.answer.focus();
+});
+SAMPLES.forEach(s => { const o = document.createElement('option'); o.value = s.id; o.textContent = s.title; E.sampleSel.appendChild(o); });
+function loadSample(id, quiet) {
+  const s = SAMPLES.find(x => x.id === id);
+  if (!s) return;
+  E.task.value = s.task; E.model.value = s.model;
+  E.task.dispatchEvent(new Event('input')); E.model.dispatchEvent(new Event('input'));
+  E.sampleNote.hidden = false;
+  if (!quiet) toast(s.model ? 'Đã nạp đề mẫu kèm bài mẫu.' : 'Đã nạp đề mẫu (đề này chưa có bài mẫu).');
+}
+E.sampleSel.addEventListener('change', async () => {
+  const id = E.sampleSel.value; E.sampleSel.value = '';
+  if (!id) return;
+  const s = SAMPLES.find(x => x.id === id);
+  const custom = (E.task.value.trim() && !SAMPLES.some(x => x.task === E.task.value)) || (E.model.value.trim() && !SAMPLES.some(x => x.model === E.model.value));
+  if (custom && !(await confirmBox('Nạp đề mẫu?', 'Đề bài và bài mẫu hiện tại sẽ được thay bằng đề „' + s.title + '“.', 'Nạp đề mẫu'))) return;
+  loadSample(id, false);
+});
+
+/* ===================== start-up ===================== */
+function restore() {
+  E.optK.value = settings.k; renderKExample();
+  E.optWords.value = settings.words.join('\n');
+  E.timeInput.value = settings.time;
+  const draft = store.get('draft', null);
+  if (draft && (draft.task || draft.answer || draft.model)) {
+    E.task.value = draft.task || ''; E.model.value = draft.model || ''; E.answer.value = draft.answer || '';
+  } else {
+    loadSample('geburtstag', true);
+  }
+  T.total = parseTime(settings.time) || 1800; T.remaining = T.total;
+  const s = store.get('timer', null);
+  if (s && s.state && s.state !== 'idle' && s.total > 0) {
+    Object.assign(T, { state: s.state, total: s.total, endAt: s.endAt, remaining: s.remaining, warned5: !!s.warned5, warned1: !!s.warned1, unlocked: !!s.unlocked });
+    if (T.state === 'running') {
+      if (T.endAt <= Date.now()) { applyTimerUI(); finishTimer(true); }
+      else {
+        startTicking();
+        if (settings.sound) {
+          const rearm = () => { if (T.state === 'running') scheduleAlarms(remaining()); };
+          document.addEventListener('pointerdown', rearm, { once: true });
+          document.addEventListener('keydown', rearm, { once: true });
+          toast('Đồng hồ vẫn đang chạy. Nhấn vào trang để bật lại chuông báo giờ.');
+        }
+      }
+    }
+  }
+  applyTimerUI();
+  updateCounters();
+  renderHistory();
+}
+restore();
+initSpell();
+})();
+</script>
+
+</html>
