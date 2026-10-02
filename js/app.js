@@ -187,7 +187,8 @@ const SAMPLES = [
 const DEMO_ANSWER = 'Liebe Anna,\n\nvielen Dank fuer deine Einladung zu deiner Geburtstagsparty am Samstag. Ich habe mich sehr gefreut!\n\nLeider kann ich nicht kommen, weil ich am Wochenende arbeiten muss. meine Kollegin ist krank und ich muss ihre Schicht übernehmen. Entschuldiegung, das ich nicht dabei sein kann. Ich bin wirklich traurig.\n\nHast du nächste woche Zeit? Wir könnten zusammen ins Café gehen und Kuchen essen. Vieleicht am Dienstag oder am Mittwoch nach der Arbeit? Ich lade dich natürlich ein.\n\nWas wünschst du dir zum Geburtstag? Ich möchte dir gern etwas schenken, aber ich weiß nicht, was dir gefällt. Vielleicht ein Buch oder eine Pflanze für deine neue Wohnung?\n\nIch wünsche dir eine schöne Party und viel Spaß mit deinen Freunden!\n\nViele Grüsse\nLisa';
 
 /* ===================== spell checker (Hunspell 1.7.3, WebAssembly) ===================== */
-const Spell = { ready: false, failed: false, broken: false, h: null, added: new Set(), promise: null, engineErrors: 0, version: '',
+// slow: still loading after 30 s (a slow connection) - grading stops waiting for it, and it takes over when it arrives
+const Spell = { ready: false, failed: false, slow: false, broken: false, h: null, added: new Set(), promise: null, engineErrors: 0, version: '',
   loadMs: null, shared: [], sharedAdded: new Set() };
 const suggestCache = new Map();                           // suggestions per word: re-grading (k, personal words) stays instant
 // The adapter analysis.js expects. One engine exception never turns a word into an error; runAnalysis() counts them
@@ -215,17 +216,21 @@ function setSpellStatus(kind, text, title) {
   E.spell.textContent = text;
   E.spell.title = title || '';
 }
-const SPELL_FAIL_HINT = 'Bản trên máy: kiểm tra thư mục lib (hunspell.js, dict-de.js) đặt cạnh index.html, rồi tải lại trang.';
+const ON_WEB = /^https?:$/.test(location.protocol);
+const SPELL_FAIL_HINT = ON_WEB ? 'Hãy kiểm tra kết nối mạng rồi tải lại trang (bản nháp vẫn được giữ).'
+  : 'Bản trên máy: kiểm tra thư mục lib (hunspell.js, dict-de.js) đặt cạnh index.html, rồi tải lại trang.';
+const SPELL_SLOW_HINT = 'Mạng đang chậm: từ điển (khoảng 0,8 MB) vẫn đang tải và sẽ tự được dùng khi tải xong. Có thể tiếp tục viết bài.';
 // The dictionary (~3 MB) loads when the page is idle, so the first seconds of typing stay smooth; anything that needs it
 // earlier (grading, re-grading) calls ensureSpell(), which starts the load at once.
 function ensureSpell() { return Spell.promise || initSpell(); }
 function initSpell() {
   if (Spell.promise) return Spell.promise;
-  // a load that never finishes is reported after 30 s, so grading does not keep waiting; a late success still takes over
+  // still loading after 30 s: reported as a slow connection (not as a failure), so grading does not keep waiting;
+  // the load goes on and takes over when it arrives (a real failure - a missing file - is reported by the loader itself)
   const watchdog = setTimeout(() => {
     if (Spell.ready || Spell.failed) return;
-    Spell.failed = true;
-    setSpellStatus('bad', 'Từ điển tải quá lâu', 'Từ điển chưa tải xong sau 30 giây. ' + SPELL_FAIL_HINT);
+    Spell.slow = true;
+    setSpellStatus('warn', 'Từ điển đang tải chậm…', SPELL_SLOW_HINT);
     renderAbout();
   }, 30000);
   const t0 = performance.now();
@@ -240,19 +245,19 @@ function initSpell() {
           return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
         };
       }
-      if (!window.HunspellWasm) await loadScript('lib/hunspell.js');
-      if (!window.B1_DICT_DE) await loadScript('lib/dict-de.js');
+      // both files at once (neither needs the other): one round of waiting instead of two
+      await Promise.all([window.HunspellWasm ? null : loadScript('lib/hunspell.js'), window.B1_DICT_DE ? null : loadScript('lib/dict-de.js')]);
       const factory = await window.HunspellWasm.loadModule();
       const enc = new TextEncoder();
       const aff = factory.mountBuffer(enc.encode(window.B1_DICT_DE.aff), 'de_DE.aff');
       const dic = factory.mountBuffer(enc.encode(window.B1_DICT_DE.dic), 'de_DE.dic');
       const h = factory.create(aff, dic);
       for (const [w, ex] of A.EXTRA_WORDS) { try { ex ? h.addWordWithAffix(w, ex) : h.addWord(w); } catch (e) { /* one missing word is not fatal */ } }
-      Spell.h = h; Spell.ready = true; Spell.failed = false; Spell.version = window.HunspellWasm.HUNSPELL_VERSION || '1.7.3';
+      Spell.h = h; Spell.ready = true; Spell.failed = false; Spell.slow = false; Spell.version = window.HunspellWasm.HUNSPELL_VERSION || '1.7.3';
       Spell.loadMs = performance.now() - t0;
       loaded = true;
     } catch (err) {
-      Spell.failed = true;
+      Spell.failed = true; Spell.slow = false;
       setSpellStatus('bad', 'Không tải được từ điển', String(err && err.message || err) + '. ' + SPELL_FAIL_HINT);
     }
     clearTimeout(watchdog);
@@ -1162,6 +1167,7 @@ function runAnalysis(text, task, model) {
 function spellMissingNote() {
   if (Spell.broken) return 'Bộ kiểm tra chính tả gặp lỗi khi chấm, nên chưa có điểm. Hãy tải lại trang rồi chấm lại (bản nháp vẫn được giữ).';
   if (Spell.failed) return 'Không tải được từ điển, nên chưa kiểm tra chính tả và chưa có điểm. ' + SPELL_FAIL_HINT;
+  if (Spell.slow) return 'Mạng đang chậm, từ điển vẫn đang tải, nên chưa kiểm tra chính tả. Kết quả sẽ tự cập nhật khi tải xong.';
   return 'Từ điển đang tải, nên chưa kiểm tra chính tả. Kết quả sẽ tự cập nhật khi tải xong.';
 }
 async function grade() {
@@ -1183,7 +1189,7 @@ async function grade() {
   E.btnGrade.disabled = true;
   setLabel(E.btnGrade, Spell.ready ? 'Đang chấm…' : 'Đang tải từ điển…');
   try {
-    if (!Spell.ready && !Spell.failed) await Promise.race([ensureSpell(), sleep(15000)]);
+    if (!Spell.ready && !Spell.failed && !Spell.slow) await Promise.race([ensureSpell(), sleep(15000)]);
     await sleep(20);                                      // let the button repaint before the work
     const text = E.answer.value;                          // the sheet as it is now (typing may continue while the dictionary loads)
     if (!A.countWords(text)) { toast('Bài viết đang trống. Hãy viết bài trước khi chấm.'); return; }
@@ -1561,7 +1567,7 @@ function renderStorageState() {
 function renderAbout() {
   E.aboutEngine.textContent = Spell.ready
     ? `Đang dùng: Hunspell ${Spell.version} · từ điển de_DE · ${A.EXTRA_WORDS.length} từ mới bổ sung · ${Spell.added.size} từ của bạn.`
-    : Spell.failed ? 'Từ điển chưa tải được. Hãy kiểm tra thư mục lib (hunspell.js, dict-de.js) rồi tải lại trang.' : 'Đang tải từ điển…';
+    : Spell.failed ? 'Từ điển chưa tải được. ' + SPELL_FAIL_HINT : Spell.slow ? 'Từ điển đang tải chậm (mạng chậm)…' : 'Đang tải từ điển…';
 }
 function renderConfig() { renderSitePanel(); renderStorageState(); renderAbout(); renderServerUi(); }
 E.btnClearDraft.addEventListener('click', async () => {
@@ -2056,7 +2062,7 @@ E.optStats.addEventListener('change', () => { settings.stats = E.optStats.checke
 function collectDiag(withText) {
   const d = { app: APP_VERSION, lang: navigator.language, screen: `${screen.width}x${screen.height}@${window.devicePixelRatio || 1}`,
     viewport: `${window.innerWidth}x${window.innerHeight}`, site: Site.mode, writing: settings.mode,
-    spell: Spell.ready ? 'ready' : Spell.failed ? 'failed' : 'loading', engineErrors: Spell.engineErrors,
+    spell: Spell.ready ? 'ready' : Spell.failed ? 'failed' : Spell.slow ? 'slow' : 'loading', engineErrors: Spell.engineErrors,
     storage: store.blocked ? 'blocked' : store.pending ? 'full' : 'ok', lastError: lastCrash || null };
   if (withText) d.text = { task: E.task.value.slice(0, 3000), answer: (traceOn() ? E.traceInput.value : E.answer.value).slice(0, 6000) };
   return d;
