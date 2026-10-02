@@ -1,4 +1,5 @@
 {
   "maintenance": false,
-  "message": ""
+  "message": "",
+  "api": "https://b1-schreibtrainer-api.nguyenthanhkienqt13.workers.dev"
 }
