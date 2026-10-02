@@ -3,7 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>B1 Schreibtrainer</title>
+<title>B1 Schreibtrainer – Luyện viết thư tiếng Đức B1 (telc, Goethe, ÖSD)</title>
+<meta name="description" content="Luyện viết thư tiếng Đức B1 trên trình duyệt: đồng hồ thi, chấm chính tả kèm gợi ý sửa, so sánh với bài mẫu, luyện in vết. Miễn phí, không cần cài đặt.">
+<link rel="canonical" href="https://nsfk.github.io/briefb1/">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#EDF0F5">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0C1017">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="B1 Schreibtrainer">
+<meta property="og:title" content="B1 Schreibtrainer – Luyện viết thư tiếng Đức B1 (telc, Goethe, ÖSD)">
+<meta property="og:description" content="Đồng hồ thi, chấm chính tả kèm gợi ý sửa, so sánh với bài mẫu và luyện in vết. Miễn phí, chạy ngay trên trình duyệt.">
+<meta property="og:url" content="https://nsfk.github.io/briefb1/">
+<meta property="og:image" content="https://nsfk.github.io/briefb1/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="B1 Schreibtrainer: tờ giấy viết thư tiếng Đức có đồng hồ thi, điểm chính tả và lỗi được đánh dấu">
+<meta property="og:locale" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "B1 Schreibtrainer", "alternateName": "Luyện viết thư tiếng Đức B1", "url": "https://nsfk.github.io/briefb1/", "description": "Luyện viết thư tiếng Đức B1 trên trình duyệt: đồng hồ thi, chấm chính tả kèm gợi ý sửa, so sánh với bài mẫu, luyện in vết. Miễn phí, không cần cài đặt.", "image": "https://nsfk.github.io/briefb1/og-image.png", "inLanguage": "vi", "applicationCategory": "EducationalApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript and WebAssembly", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "VND"}, "educationalLevel": "B1", "audience": {"@type": "EducationalAudience", "educationalRole": "student"}, "keywords": "Deutsch als Fremdsprache, telc Deutsch B1, Goethe-Zertifikat B1, ÖSD Zertifikat B1, Brief schreiben, Rechtschreibung", "publisher": {"@type": "Organization", "name": "thanhkien.id.vn", "url": "https://thanhkien.id.vn", "email": "nguyenthanhkienqt13@gmail.com"}, "copyrightHolder": {"@type": "Organization", "name": "thanhkien.id.vn", "url": "https://thanhkien.id.vn", "email": "nguyenthanhkienqt13@gmail.com"}, "copyrightYear": 2026}</script>
 <style>
 /* Layout: exam desk - a sticky exam clock with view tabs across the top; task and model answer stacked on the left,
    the lined answer sheet (sticky toolbar, correction margin) on the right; correction tabs open below after grading. */
@@ -23,6 +42,12 @@
   --amber-soft: #FFF0D2;
   --green: #14714A;
   --green-soft: #E1F3E8;
+  --violet: #6B34C9;
+  --violet-soft: #EFE7FF;
+  --teal: #00756F;
+  --teal-soft: #DDF4F1;
+  --ghost: #9AA3B4;
+  --bar: #2340C8;
   --scrim: rgb(12 16 23 / 55%);
   --shadow: 0 1px 2px rgb(23 32 51 / 6%), 0 8px 24px rgb(23 32 51 / 7%);
   --f-din: "Bahnschrift", "DIN Alternate", "D-DIN", "Arial Narrow", system-ui, sans-serif;
@@ -37,6 +62,7 @@
     --desk: #0C1017; --paper: #151B26; --ink: #E4E8F0; --muted: #9CA5B7; --line: #283144; --margin: #5E2B35;
     --blue: #93A6FF; --on-blue: #0C1017; --blue-soft: #1B2442; --red: #FF7482; --red-soft: #3A1B22;
     --amber: #F0B24B; --amber-soft: #33260E; --green: #58C992; --green-soft: #11301F; --scrim: rgb(0 0 0 / 65%);
+    --violet: #C3A3FF; --violet-soft: #2B1F45; --teal: #5ED6CB; --teal-soft: #0F2E2C; --ghost: #56607A; --bar: #6F84EC;
     --shadow: 0 1px 2px rgb(0 0 0 / 45%), 0 8px 24px rgb(0 0 0 / 30%);
     color-scheme: dark;
   }
@@ -45,6 +71,7 @@
   --desk: #0C1017; --paper: #151B26; --ink: #E4E8F0; --muted: #9CA5B7; --line: #283144; --margin: #5E2B35;
   --blue: #93A6FF; --on-blue: #0C1017; --blue-soft: #1B2442; --red: #FF7482; --red-soft: #3A1B22;
   --amber: #F0B24B; --amber-soft: #33260E; --green: #58C992; --green-soft: #11301F; --scrim: rgb(0 0 0 / 65%);
+  --violet: #C3A3FF; --violet-soft: #2B1F45; --teal: #5ED6CB; --teal-soft: #0F2E2C; --ghost: #56607A; --bar: #6F84EC;
   --shadow: 0 1px 2px rgb(0 0 0 / 45%), 0 8px 24px rgb(0 0 0 / 30%);
   color-scheme: dark;
 }
@@ -55,6 +82,7 @@ html { scroll-padding-top: calc(var(--stick-top) + 8px); scroll-padding-bottom: 
 /* while the answer sheet has focus, caret scrolling keeps the line clear of the sticky clock + sheet toolbar */
 html.writing { scroll-padding-top: calc(var(--stick-top) + var(--tools-h, 100px) + 8px); }
 [hidden] { display: none !important; }
+a { color: var(--blue); text-underline-offset: 2px; }
 body { background: var(--desk); color: var(--ink); font: 15px/1.5 var(--f-ui); -webkit-font-smoothing: antialiased; }
 button, input, select, textarea { font: inherit; color: inherit; }
 b { font-weight: 650; }
@@ -67,7 +95,7 @@ b { font-weight: 650; }
 .topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--paper); border-bottom: 1px solid var(--line); box-shadow: var(--shadow); }
 .topbar-inner { max-width: 1360px; margin: 0 auto; padding: 10px 16px; display: grid; grid-template-columns: minmax(170px, auto) auto minmax(0, 1fr) auto; align-items: center; gap: 10px 26px; }
 .brand { display: grid; gap: 6px; }
-.brand-name { font: 600 21px/1.1 var(--f-din); letter-spacing: .01em; }
+.brand-name { margin: 0; font: 600 21px/1.1 var(--f-din); letter-spacing: .01em; }
 .viewtabs { display: flex; gap: 2px; background: var(--desk); border: 1px solid var(--line); border-radius: 9px; padding: 2px; width: max-content; }
 .vtab { border: 0; background: none; padding: 4px 10px; border-radius: 7px; font-size: 13px; font-weight: 650; color: var(--muted); cursor: pointer; }
 .vtab[aria-selected="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / 12%); }
@@ -101,6 +129,8 @@ b { font-weight: 650; }
 /* ---------- controls ---------- */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-weight: 650; cursor: pointer; white-space: nowrap; }
 .btn svg { width: 16px; height: 16px; flex: none; }
+a.btn { text-decoration: none; }
+.btn-sm svg { width: 14px; height: 14px; }
 .btn:hover:not(:disabled) { border-color: var(--blue); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .btn-primary { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
@@ -139,6 +169,7 @@ b { font-weight: 650; }
 .head-tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 textarea.plain { display: block; width: 100%; border: 0; outline: 0; resize: vertical; padding: 12px 14px; background: var(--paper); color: var(--ink); font: 16px/1.6 var(--f-sheet); border-radius: 0 0 var(--r) var(--r); }
 textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
+textarea.dropping { box-shadow: inset 0 0 0 3px var(--blue) !important; background: var(--blue-soft) !important; }
 .note { margin: 0; padding: 8px 14px 12px; font-size: 13px; color: var(--muted); border-top: 1px dashed var(--line); }
 .cover { display: grid; gap: 4px; place-content: center; text-align: center; min-height: 180px; padding: 16px; color: var(--muted); font-size: 14px;
   background: repeating-linear-gradient(135deg, var(--desk) 0 10px, var(--paper) 10px 20px); border-radius: 0 0 var(--r) var(--r); }
@@ -167,6 +198,73 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
 .locknote { background: var(--red-soft); color: var(--red); font-weight: 600; }
 .sheet-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; border-top: 1px solid var(--line); }
 .steps { margin: 0; padding: 0 14px 14px 34px; display: grid; gap: 2px; }
+
+/* writing mode switch + tracing sheet ("viết in vết"): the model is shown faded, typed letters take its place */
+.modes { display: inline-flex; gap: 2px; background: var(--desk); border: 1px solid var(--line); border-radius: 9px; padding: 2px; }
+.mode { border: 0; background: none; padding: 3px 10px; border-radius: 7px; font-size: 13px; font-weight: 650; color: var(--muted); cursor: pointer; }
+.mode[aria-checked="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / 12%); }
+.trace-stats { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px 14px; border-bottom: 1px solid var(--line); font-size: 13px; font-variant-numeric: tabular-nums; }
+.tpill { display: inline-flex; gap: 5px; align-items: center; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 650; border: 1px solid transparent; }
+.tpill b { font: 600 13px var(--f-din); }
+.tp-case { background: var(--violet-soft); color: var(--violet); }
+.tp-punct { background: var(--amber-soft); color: var(--amber); }
+.tp-uml { background: var(--teal-soft); color: var(--teal); }
+.tp-letter, .tp-missing, .tp-extra { background: var(--red-soft); color: var(--red); }
+.tp-zero { background: var(--desk); color: var(--muted); border-color: var(--line); }
+.trace-area { position: relative; }
+.trace-view { min-height: calc(var(--lh) * 15 + 12px); padding: 6px 60px 6px 22px; margin: 0; font: 18px/var(--lh) var(--f-sheet); color: var(--ghost);
+  white-space: pre-wrap; overflow-wrap: break-word; cursor: text; background-color: var(--paper);
+  background-image:
+    linear-gradient(90deg, transparent calc(100% - 44px), var(--margin) calc(100% - 44px), var(--margin) calc(100% - 42px), transparent calc(100% - 42px)),
+    repeating-linear-gradient(180deg, transparent 0 calc(var(--lh) - 1px), var(--line) calc(var(--lh) - 1px) var(--lh));
+  background-position: 0 0, 0 6px; }
+.tpara { margin: 0; }
+.tpara + .tpara { margin-top: var(--lh); }      /* the blank line between paragraphs, still on the ruled lines */
+.trace-view .t-ok { color: var(--ink); }
+.trace-view .t-case { color: var(--violet); background: var(--violet-soft); box-shadow: inset 0 -2px 0 var(--violet); }
+.trace-view .t-punct { color: var(--amber); background: var(--amber-soft); box-shadow: inset 0 -2px 0 var(--amber); }
+.trace-view .t-uml { color: var(--teal); background: var(--teal-soft); box-shadow: inset 0 -2px 0 var(--teal); }
+.trace-view .t-letter { color: var(--red); background: var(--red-soft); box-shadow: inset 0 -2px 0 var(--red); }
+.trace-view .t-miss { color: var(--red); text-decoration: underline wavy var(--red); text-underline-offset: 4px; opacity: .75; }
+.trace-view .t-extra { color: var(--red); text-decoration: line-through; }
+.tcaret { display: inline-block; width: 0; height: 1.15em; margin-right: -2px; border-left: 2px solid var(--blue); vertical-align: -0.22em; visibility: hidden; }
+.trace-view.focused .tcaret { visibility: visible; animation: caretblink 1.06s steps(2, jump-none) infinite; }
+@keyframes caretblink { 50% { opacity: 0; } }
+.trace-input { position: absolute; top: 0; left: 0; width: 1px; height: var(--lh); padding: 0; border: 0; outline: 0; resize: none; overflow: hidden;
+  font: 18px var(--f-sheet); color: transparent; background: transparent; caret-color: transparent; white-space: pre; pointer-events: none; }
+.trace-done { margin: 0 14px 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 10px; }
+.trace-done h3 { margin: 0; font: 600 14px/1.2 var(--f-din); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.trace-done .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.wordfix { display: flex; flex-wrap: wrap; gap: 6px; font-family: var(--f-sheet); }
+.wordfix span { padding: 1px 8px; border-radius: 6px; background: var(--desk); border: 1px solid var(--line); }
+.wordfix s { color: var(--red); }
+.wordfix b { color: var(--green); font-weight: 600; }
+
+/* contributions, reports, admin dashboard */
+.contrib { border: 1px dashed var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; }
+.contrib p { margin: 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.tile { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; }
+.tile .v { font: 600 22px/1.15 var(--f-din); }
+.tile .k { font-size: 12px; color: var(--muted); }
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .axis { fill: var(--muted); font: 11px var(--f-ui); }
+.chart .bar { fill: var(--bar); pointer-events: none; }   /* the column's hit area below takes hover and focus */
+.chart .hit { fill: transparent; cursor: default; outline: none; }
+.chart .hit:hover + .bar, .chart .hit:focus + .bar { fill: var(--blue); filter: brightness(1.15); }
+.chart-tip { position: absolute; pointer-events: none; z-index: 5; background: var(--paper); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 8px; box-shadow: var(--shadow); padding: 6px 10px; font-size: 12px; white-space: nowrap; }
+.chart-tip b { font: 600 15px var(--f-din); }
+.queue { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.queue li { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 6px; min-width: 0; }
+.queue .meta { font-size: 12px; color: var(--muted); }
+.queue pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 14px/1.5 var(--f-sheet); max-height: 240px; overflow: auto; background: var(--desk); border-radius: 6px; padding: 6px 8px; }
+.queue .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.adm-pane { display: grid; gap: 12px; padding-top: 12px; min-width: 0; }
+.foot .row { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--blue); font: inherit; text-decoration: underline; cursor: pointer; }
 
 /* floating umlaut palette for the task / model / settings fields */
 .uml-float { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 30; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
@@ -228,7 +326,8 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
 
 /* history + configuration views */
 .wrap { padding-block: 16px; display: grid; gap: 16px; }
-.config-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+.config-grid { display: block; columns: 2 380px; column-gap: 16px; }   /* panels of different heights flow without gaps */
+.config-grid > .panel { break-inside: avoid; margin: 0 0 16px; }
 #histBody { padding: 12px 14px; }
 .trend-up { color: var(--green); font-weight: 650; }
 .trend-down { color: var(--red); font-weight: 650; }
@@ -278,12 +377,16 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
   .toggles { grid-column: 1 / -1; grid-auto-flow: column; justify-content: start; gap: 14px; }
 }
 @media (max-width: 900px) {
-  .desk, .config-grid { grid-template-columns: minmax(0, 1fr); }
+  .desk { grid-template-columns: minmax(0, 1fr); }
+  .config-grid { columns: 1; }
   .topbar { position: static; }
 }
 @media (max-width: 640px) {
   .clock { font-size: 44px; }
-  .toggles { grid-auto-flow: row; }
+  .toggles { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+  .chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; max-width: 100%; }   /* one swipeable row */
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex: none; }
   .cmp { grid-template-columns: minmax(0, 1fr); }
   .sheet { padding-right: 52px; font-size: 17px; }
   .kbd-hint { display: none; }
@@ -296,11 +399,24 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
 }
 </style>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <symbol id="i-folder" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M1.8 4.2v8a1 1 0 0 0 1 1h10.4a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1H8L6.6 3.3H2.8a1 1 0 0 0-1 .9z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 8.4l3.2 3.1L13 4.6"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" d="M8 1.8l1.5 4.7L14.2 8l-4.7 1.5L8 14.2l-1.5-4.7L1.8 8l4.7-1.5z"/></symbol>
+  <symbol id="i-new" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M9.2 1.8H4.2a1 1 0 0 0-1 1v10.4a1 1 0 0 0 1 1h7.6a1 1 0 0 0 1-1V5.4zM9.2 1.8v3.6h3.6M8 7.6v4M6 9.6h4"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M3.2 8a4.8 4.8 0 1 0 1.5-3.5M3 2.5v2.8h2.8"/></symbol>
+  <symbol id="i-down" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M8 2.2v7.6M4.8 6.8 8 10l3.2-3.2M2.6 11.4v1.4a1 1 0 0 0 1 1h8.8a1 1 0 0 0 1-1v-1.4"/></symbol>
+  <symbol id="i-up" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M8 10.2V2.6M4.8 5.6 8 2.4l3.2 3.2M2.6 11.4v1.4a1 1 0 0 0 1 1h8.8a1 1 0 0 0 1-1v-1.4"/></symbol>
+  <symbol id="i-link" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M6.6 9.4a2.8 2.8 0 0 0 4 0l2.2-2.2a2.8 2.8 0 0 0-4-4l-.9.9M9.4 6.6a2.8 2.8 0 0 0-4 0L3.2 8.8a2.8 2.8 0 0 0 4 4l.9-.9"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M2.6 4.2h10.8M6.4 4.2V2.8h3.2v1.4M4 4.2l.6 9a1 1 0 0 0 1 .9h4.8a1 1 0 0 0 1-.9l.6-9M6.6 6.8v4.6M9.4 6.8v4.6"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" d="M1.6 8s2.4-4.6 6.4-4.6S14.4 8 14.4 8 12 12.6 8 12.6 1.6 8 1.6 8z"/><circle cx="8" cy="8" r="1.8" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-5.6 5.6a1.5 1.5 0 0 0 2.1 2.1l5.6-5.6a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.1-.6-.6-2.1z"/></symbol>
+</defs></svg>
 <div id="appRoot">
 <header class="topbar" id="topbar">
   <div class="topbar-inner">
     <div class="brand">
-      <div class="brand-name">B1 Schreibtrainer</div>
+      <h1 class="brand-name">B1 Schreibtrainer</h1>
       <nav class="viewtabs" role="tablist" aria-label="Khu vực">
         <button type="button" class="vtab" role="tab" id="vt-practice" aria-controls="view-practice" aria-selected="true">Luyện viết</button>
         <button type="button" class="vtab" role="tab" id="vt-history" aria-controls="view-history" aria-selected="false" tabindex="-1">Lịch sử</button>
@@ -361,10 +477,10 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
         <div class="head-tools">
           <label class="sr-only" for="sampleSel">Chọn đề mẫu</label>
           <select id="sampleSel" class="select"><option value="">Đề mẫu…</option></select>
-          <button type="button" class="btn btn-sm" data-open="task">Mở file</button>
+          <button type="button" class="btn btn-sm" data-open="task"><svg class="ic" aria-hidden="true"><use href="#i-folder"/></svg><span>Mở file</span></button>
         </div>
       </div>
-      <textarea id="task" class="plain" lang="de" spellcheck="false" rows="10" placeholder="Dán đề bài vào đây. Các ý bắt đầu bằng „–“ hoặc số (1., 2.) sẽ thành danh sách Leitpunkte để tự kiểm tra khi chấm."></textarea>
+      <textarea id="task" class="plain" lang="de" spellcheck="false" rows="10" placeholder="Dán đề bài vào đây, hoặc kéo thả tệp .txt / .docx vào ô này. Các ý bắt đầu bằng „–“ hoặc số (1., 2.) sẽ thành danh sách Leitpunkte để tự kiểm tra khi chấm."></textarea>
       <p id="sampleNote" class="note" hidden>Đây là đề ví dụ. Dán đề của bạn vào ô trên, hoặc mở file .txt / .docx.</p>
     </section>
     <section class="panel" aria-labelledby="hModel">
@@ -372,10 +488,10 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
         <h2 id="hModel">Bài mẫu <span class="de">Musterlösung</span></h2>
         <div class="head-tools">
           <button type="button" id="btnModelToggle" class="btn btn-sm" aria-pressed="true">Ẩn</button>
-          <button type="button" class="btn btn-sm" data-open="model">Mở file</button>
+          <button type="button" class="btn btn-sm" data-open="model"><svg class="ic" aria-hidden="true"><use href="#i-folder"/></svg><span>Mở file</span></button>
         </div>
       </div>
-      <textarea id="model" class="plain" lang="de" spellcheck="false" rows="10" placeholder="Dán bài mẫu vào đây. Sau khi chấm, bài của bạn sẽ được so sánh với bài này từng từ một."></textarea>
+      <textarea id="model" class="plain" lang="de" spellcheck="false" rows="10" placeholder="Dán bài mẫu vào đây, hoặc kéo thả tệp .txt / .docx vào ô này. Sau khi chấm, bài của bạn được so sánh với bài này từng từ một."></textarea>
       <div id="modelCover" class="cover" hidden>
         <strong>Bài mẫu đang được che</strong>
         <span id="modelCoverText"></span>
@@ -388,27 +504,43 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
       <div class="sheet-tools" id="sheetTools">
         <div class="panel-head">
           <h2 id="hAnswer">Bài viết của bạn <span class="de">Mein Text</span></h2>
+          <div class="modes" role="radiogroup" aria-label="Cách luyện">
+            <button type="button" class="mode" role="radio" id="modeFree" aria-checked="true" title="Tự viết bài, rồi chấm chính tả">Viết tự do</button>
+            <button type="button" class="mode" role="radio" id="modeTrace" aria-checked="false" tabindex="-1" title="Bài mẫu hiện mờ, bạn gõ theo; chữ sai hiện màu ngay">Viết in vết</button>
+          </div>
           <div class="counters" aria-live="polite"><span><b id="cntWords">0</b> từ</span><span><b id="cntSent">0</b> câu</span></div>
         </div>
         <div class="umlauts" role="toolbar" aria-label="Chèn chữ tiếng Đức">
           <span class="uml-keys" data-uml></span>
           <span class="muted small kbd-hint">Phím tắt: Alt + A / O / U / S (thêm Shift để viết hoa)</span>
         </div>
+        <div id="traceStats" class="trace-stats" hidden></div>
       </div>
       <textarea id="answer" class="sheet" lang="de" spellcheck="false" aria-label="Bài viết" placeholder="Liebe Anna,&#10;&#10;vielen Dank für …"></textarea>
+      <div id="traceBox" hidden>
+        <div class="trace-area">
+          <div id="traceView" class="trace-view" lang="de" aria-hidden="true"></div>
+          <textarea id="traceInput" class="trace-input" lang="de" rows="1" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" aria-label="Gõ theo bài mẫu (chế độ in vết)"></textarea>
+        </div>
+        <p id="traceEmpty" class="warnline" hidden>Chế độ in vết cần bài mẫu. Hãy dán bài mẫu vào ô „Bài mẫu“, hoặc chọn một đề mẫu có sẵn bài mẫu.</p>
+      </div>
       <p id="saveWarn" class="warnline" role="status" hidden>Trình duyệt không lưu được bài (bộ nhớ bị chặn hoặc đã đầy). Bài vẫn nằm trên trang, nhưng sẽ mất khi đóng hoặc tải lại trang — hãy sao chép bài ra nơi khác trước khi đóng.</p>
       <p id="imeWarn" class="warnline" hidden>Trong bài có chữ tiếng Việt (ư, ơ, đ hoặc dấu thanh). Bộ gõ tiếng Việt có thể đang bật — hãy chuyển sang chế độ gõ tiếng Anh (E) khi viết tiếng Đức.</p>
       <p id="lockNote" class="locknote" hidden>Hết giờ — bài viết đã được khóa như trong phòng thi. <button type="button" id="btnUnlock" class="btn btn-sm">Mở khóa để viết tiếp</button></p>
       <div class="sheet-actions">
-        <button type="button" id="btnGrade" class="btn btn-primary btn-lg">Chấm điểm</button>
-        <button type="button" id="btnDemo" class="btn">Thử với bài ví dụ</button>
-        <button type="button" id="btnNew" class="btn">Bài mới</button>
-        <span class="muted small">Ctrl + Enter để chấm</span>
+        <button type="button" id="btnGrade" class="btn btn-primary btn-lg"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Chấm điểm</span></button>
+        <button type="button" id="btnDemo" class="btn"><svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg><span>Thử với bài ví dụ</span></button>
+        <button type="button" id="btnNew" class="btn"><svg class="ic" aria-hidden="true"><use href="#i-new"/></svg><span>Bài mới</span></button>
+        <button type="button" id="btnTraceFinish" class="btn btn-primary btn-lg" hidden><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Kết thúc và lưu kết quả</span></button>
+        <button type="button" id="btnTraceRestart" class="btn" hidden><svg class="ic" aria-hidden="true"><use href="#i-redo"/></svg><span>Gõ lại từ đầu</span></button>
+        <span id="gradeHint" class="muted small">Ctrl + Enter để chấm</span>
       </div>
+      <div id="traceDone" class="trace-done" hidden></div>
       <ol class="steps muted small">
         <li>Chọn thời gian rồi bấm <b>Bắt đầu</b>. Khi hết giờ, ứng dụng phát chuông và hiện thông báo.</li>
         <li>Viết bài trên tờ giấy kẻ dòng. Tờ giấy tự dài ra theo bài; thanh chữ ä ö ü ß luôn nằm ngay dưới đồng hồ khi cuộn.</li>
         <li>Bấm <b>Chấm điểm</b> để xem lỗi chính tả, điểm, và so sánh với bài mẫu.</li>
+        <li>Muốn luyện chép đúng từng chữ: chọn <b>Viết in vết</b> — bài mẫu hiện mờ, bạn gõ theo; viết hoa, dấu câu, umlaut/ß sai sẽ hiện màu ngay.</li>
       </ol>
     </section>
   </div>
@@ -437,7 +569,7 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
     <section class="panel" aria-labelledby="hHist">
       <div class="panel-head">
         <h2 id="hHist">Lịch sử <span class="de">Verlauf</span></h2>
-        <button type="button" id="btnClearHist" class="btn btn-sm btn-danger" disabled>Xóa lịch sử</button>
+        <button type="button" id="btnClearHist" class="btn btn-sm btn-danger" disabled><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span>Xóa lịch sử</span></button>
       </div>
       <div id="histBody"></div>
     </section>
@@ -465,9 +597,9 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
           <label for="maintUntil" class="lbl">Tự mở lại lúc (không bắt buộc)</label>
           <div class="row"><input id="maintUntil" class="field" style="max-width:240px" type="datetime-local"><button type="button" id="btnClearUntil" class="btn btn-sm">Xóa giờ</button></div>
           <div class="row">
-            <button type="button" id="btnMaintToggle" class="btn btn-solid-danger">Tạm đóng để bảo trì</button>
-            <button type="button" id="btnMaintSave" class="btn" hidden>Lưu lời nhắn và giờ mở lại</button>
-            <button type="button" id="btnMaintPreview" class="btn">Xem trước màn hình bảo trì</button>
+            <button type="button" id="btnMaintToggle" class="btn btn-solid-danger"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg><span>Tạm đóng để bảo trì</span></button>
+            <button type="button" id="btnMaintSave" class="btn" hidden><span>Lưu lời nhắn và giờ mở lại</span></button>
+            <button type="button" id="btnMaintPreview" class="btn"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg><span>Xem trước màn hình bảo trì</span></button>
           </div>
           <div id="siteJsonBox" class="settings" style="padding:0" hidden>
             <label for="siteJson" class="lbl">Nội dung tệp site.json</label>
@@ -498,6 +630,18 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
         <label for="optWords" class="lbl">Từ của tôi</label>
         <textarea id="optWords" class="plain small-ta" rows="5" spellcheck="false" lang="de" placeholder="Mỗi dòng một từ, ví dụ:&#10;Kien&#10;Merseburg"></textarea>
         <p class="muted small">Tên riêng và từ không có trong từ điển. Các từ này không bị tính là lỗi. Tên có trong đề bài, ở dòng chào đầu thư và ở chữ ký cuối thư được bỏ qua tự động.</p>
+        <div class="row"><button type="button" id="btnWordsSuggest" class="btn btn-sm" hidden><svg class="ic" aria-hidden="true"><use href="#i-up"/></svg><span>Đề xuất cho từ điển chung</span></button><button type="button" id="btnWordsExport" class="btn btn-sm"><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg><span>Xuất ra tệp .txt</span></button><button type="button" id="btnWordsImport" class="btn btn-sm"><svg class="ic" aria-hidden="true"><use href="#i-up"/></svg><span>Nhập từ tệp .txt</span></button></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="hWrite">
+      <div class="panel-head"><h2 id="hWrite">Khi viết <span class="de">Schreiben</span></h2></div>
+      <div class="settings">
+        <label class="switch"><input type="checkbox" id="optHelpers"><span class="track"></span><span>Cho phép tiện ích trình duyệt trên các ô viết</span></label>
+        <p class="muted small">Mặc định trang chặn dịch tự động, Grammarly, LanguageTool, gợi ý viết và tự viết hoa của bàn phím điện thoại trên các ô viết, vì chúng hay che con trỏ, đề xuất sai ngôn ngữ hoặc tự sửa lỗi thay bạn. Ô in vết luôn được chặn. Một số tiện ích AI hiện nút khi bôi đen chữ thì trang không chặn được; hãy tắt chúng cho trang này trong cài đặt của tiện ích.</p>
+        <hr>
+        <label class="switch"><input type="checkbox" id="optFileTip"><span class="track"></span><span>Nhắc trước khi mở hộp chọn tệp</span></label>
+        <p class="muted small">Hộp chọn tệp của Windows có thể mất vài giây mới hiện, trình duyệt đứng yên trong lúc đó. Bài đang viết luôn được lưu trước khi mở hộp. Nhanh hơn: kéo thả tệp vào ô Đề bài / Bài mẫu, hoặc dán nội dung.</p>
       </div>
     </section>
 
@@ -506,9 +650,54 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
       <div class="settings">
         <p class="small">Bản nháp, lịch sử và cài đặt chỉ được lưu trong trình duyệt này. Bài viết không được gửi đi đâu.</p>
         <p id="storageState" class="muted small"></p>
+        <label class="switch"><input type="checkbox" id="optStats"><span class="track"></span><span>Gửi thống kê ẩn danh cho chủ trang</span></label>
+        <p class="muted small">Chỉ đếm số lần mở trang, số lần chấm và in vết, thời gian tải từ điển. Không gửi nội dung bài viết, tên hay địa chỉ IP. Chỉ có tác dụng khi trang có máy chủ.</p>
+        <hr>
+        <h3>Sao lưu ra tệp</h3>
+        <p class="small">Dữ liệu trong trình duyệt có thể mất khi xóa bộ nhớ đệm hoặc đổi máy. Tệp sao lưu (.json) chứa lịch sử chấm và in vết, cài đặt, „Từ của tôi“, bản nháp.</p>
+        <div class="row"><button type="button" id="btnBackupExport" class="btn btn-sm"><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg><span>Xuất tệp sao lưu</span></button><button type="button" id="btnBackupImport" class="btn btn-sm"><svg class="ic" aria-hidden="true"><use href="#i-up"/></svg><span>Khôi phục từ tệp sao lưu</span></button></div>
+        <div id="linkBox" class="settings" style="padding:0">
+          <label class="lbl">Tự sao lưu vào một tệp trên máy</label>
+          <p id="linkState" class="small"></p>
+          <div class="row">
+            <button type="button" id="btnLink" class="btn btn-sm"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span>Chọn tệp để tự sao lưu</span></button>
+            <button type="button" id="btnLinkAllow" class="btn btn-sm btn-primary" hidden>Cho phép ghi tiếp vào tệp</button>
+            <button type="button" id="btnLinkRestore" class="btn btn-sm" hidden>Khôi phục từ tệp này</button>
+            <button type="button" id="btnUnlink" class="btn btn-sm btn-danger" hidden>Bỏ liên kết</button>
+          </div>
+        </div>
+        <hr>
         <div class="row">
-          <button type="button" id="btnClearDraft" class="btn btn-sm btn-danger">Xóa bản nháp</button>
-          <button type="button" id="btnClearHist2" class="btn btn-sm btn-danger">Xóa lịch sử</button>
+          <button type="button" id="btnClearDraft" class="btn btn-sm btn-danger"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span>Xóa bản nháp</span></button>
+          <button type="button" id="btnClearHist2" class="btn btn-sm btn-danger"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span>Xóa lịch sử</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="hAdmin" id="adminPanel">
+      <div class="panel-head"><h2 id="hAdmin">Quản trị máy chủ <span class="de">Verwaltung</span></h2><span id="apiStatus" class="pill">Chưa kết nối</span></div>
+      <div class="settings">
+        <p class="muted small">Dành cho chủ trang: thống kê sử dụng, duyệt bài mẫu và từ do người học đóng góp, xem báo lỗi, bật / tắt bảo trì ngay. Cần máy chủ Cloudflare Worker (xem server/HUONG-DAN.md).</p>
+        <label for="apiUrl" class="lbl">Địa chỉ máy chủ (API)</label>
+        <input id="apiUrl" class="field" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://b1-schreibtrainer-api.ten-cua-ban.workers.dev">
+        <label for="adminToken" class="lbl">Mã quản trị</label>
+        <div class="row">
+          <input id="adminToken" class="field" style="max-width:260px" type="password" autocomplete="off">
+          <label class="small" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" id="adminRemember"> Ghi nhớ trên máy này</label>
+        </div>
+        <div class="row"><button type="button" id="btnAdminConnect" class="btn btn-sm btn-primary">Kết nối</button><button type="button" id="btnAdminLogout" class="btn btn-sm" hidden>Thoát quản trị</button></div>
+        <p id="adminNote" class="small" role="status"></p>
+        <div id="adminBody" hidden>
+          <div class="tabs" role="tablist" aria-label="Quản trị">
+            <button type="button" class="tab adm-tab" role="tab" id="adm-tab-stats" aria-controls="admStats" aria-selected="true">Thống kê</button>
+            <button type="button" class="tab adm-tab" role="tab" id="adm-tab-samples" aria-controls="admSamples" aria-selected="false" tabindex="-1">Bài mẫu chờ duyệt <span id="admCntSamples"></span></button>
+            <button type="button" class="tab adm-tab" role="tab" id="adm-tab-words" aria-controls="admWords" aria-selected="false" tabindex="-1">Từ chờ duyệt <span id="admCntWords"></span></button>
+            <button type="button" class="tab adm-tab" role="tab" id="adm-tab-reports" aria-controls="admReports" aria-selected="false" tabindex="-1">Báo lỗi <span id="admCntReports"></span></button>
+          </div>
+          <div id="admStats" class="adm-pane" role="tabpanel" aria-labelledby="adm-tab-stats"></div>
+          <div id="admSamples" class="adm-pane" role="tabpanel" aria-labelledby="adm-tab-samples" hidden></div>
+          <div id="admWords" class="adm-pane" role="tabpanel" aria-labelledby="adm-tab-words" hidden></div>
+          <div id="admReports" class="adm-pane" role="tabpanel" aria-labelledby="adm-tab-reports" hidden></div>
         </div>
       </div>
     </section>
@@ -519,13 +708,16 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
         <p class="small">Chính tả được kiểm tra bằng Hunspell 1.7.3 (WebAssembly) với từ điển de_DE igerman98 © Björn Jacke (GPL 2/3), cộng một danh sách từ mới bổ sung (App, Homeoffice, vietnamesisch…). Ứng dụng chạy hoàn toàn trên trình duyệt, không cần mạng.</p>
         <p class="small">Điểm chỉ phản ánh chính tả (Rechtschreibung), gồm cả viết hoa đầu câu và danh từ viết thường. Ngữ pháp và nội dung không được chấm. Khi thi telc, giám khảo còn chấm việc trả lời đủ các ý của đề (Leitpunkte), cách trình bày thư và độ chính xác ngôn ngữ.</p>
         <p id="aboutEngine" class="muted small"></p>
+        <div class="row"><button type="button" class="btn btn-sm" data-report><span>Báo lỗi</span></button></div>
       </div>
     </section>
   </div>
 </div>
 
 <footer class="foot">
-  <p>B1 Schreibtrainer · Hunspell 1.7.3 · từ điển de_DE igerman98 (GPL 2/3) · chạy offline trong trình duyệt.</p>
+  <p>B1 Schreibtrainer giúp luyện viết thư tiếng Đức trình độ B1 (telc, Goethe, ÖSD): đồng hồ thi, chấm chính tả, so sánh với bài mẫu và luyện in vết bài mẫu, ngay trên trình duyệt.</p>
+  <div class="row"><span>Hunspell 1.7.3 · từ điển de_DE igerman98 (GPL 2/3) · chạy offline trong trình duyệt.</span><button type="button" class="linkbtn" data-report>Báo lỗi</button></div>
+  <div class="row"><span>Copyright © 2026 by <a href="https://thanhkien.id.vn" rel="author">thanhkien.id.vn</a></span><span>Liên hệ, báo lỗi: <a href="mailto:nguyenthanhkienqt13@gmail.com">nguyenthanhkienqt13@gmail.com</a></span></div>
 </footer>
 </div>
 
@@ -537,6 +729,17 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
     <p id="maintMsg"></p>
     <p id="maintEta" class="maint-eta" hidden></p>
     <p id="maintOwnerHint" class="muted small" hidden>Chủ trang: để mở lại, sửa tệp site.json trong kho GitHub (đặt "maintenance": false) rồi Commit. Trang tự kiểm tra lại mỗi phút.</p>
+    <p id="maintOwnerApi" class="muted small" hidden>Chủ trang: <button type="button" id="btnMaintOwner" class="linkbtn">đăng nhập quản trị</button> để vào trang và mở lại.</p>
+    <div id="maintTokenRow" class="maint-admin" hidden>
+      <div class="settings" style="padding:0">
+        <label for="maintToken" class="lbl">Mã quản trị máy chủ</label>
+        <input id="maintToken" class="field" type="password" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+        <button type="button" id="btnMaintSignin" class="btn btn-primary">Đăng nhập</button>
+      </div>
+      <p id="maintTokenErr" class="field-err" hidden></p>
+    </div>
     <p id="maintTimerNote" class="small" hidden>Đồng hồ làm bài của bạn đã được tạm dừng và sẽ chờ đến khi trang mở lại.</p>
     <p class="muted small">Bản nháp của bạn vẫn được giữ trên trình duyệt này.</p>
     <div id="maintAdmin" class="maint-admin" hidden>
@@ -556,8 +759,8 @@ textarea.plain:focus-visible { box-shadow: inset 0 0 0 2px var(--blue); }
 <div id="backdrop" class="backdrop" hidden><div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div></div>
 <div id="pop" class="pop" role="dialog" aria-label="Chi tiết lỗi" hidden></div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-<input type="file" id="fileInput" accept=".txt,.md,.docx,text/plain" hidden>
 <script src="js/analysis.js"></script>
+<script src="js/trace.js"></script>
 <script src="js/app.js"></script>
 <script>
 /* start-up check: js/ missing (e.g. index.html opened from inside a .zip or copied alone) or the app failed to start */
