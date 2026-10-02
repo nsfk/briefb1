@@ -17,6 +17,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const smooth = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
 const capFirst = s => s.charAt(0).toUpperCase() + s.slice(1);
 const joinVi = list => (list.length <= 1 ? list.join('') : list.slice(0, -1).join(', ') + ' và ' + list[list.length - 1]);
+// quan-tri.html (<html data-page="admin">): the owner's console - server dashboard and the maintenance switch, nothing of
+// the learner's desk. index.html is the learner page and never shows the owner's tools.
+const ADMIN_PAGE = document.documentElement.getAttribute('data-page') === 'admin';
 const BASE_TITLE = document.title || 'B1 Schreibtrainer';   // the full title (search results) while idle
 const SHORT_TITLE = 'B1 Schreibtrainer';                     // next to the countdown, so the time stays readable in the tab
 const setLabel = (btn, text) => { (btn.querySelector('span') || btn).textContent = text; };   // keeps a button's icon
@@ -82,8 +85,7 @@ const E = {
   maintScreen: $('#maintScreen'), maintTitle: $('#maintTitle'), maintMsg: $('#maintMsg'), maintEta: $('#maintEta'),
   maintTimerNote: $('#maintTimerNote'), maintAdmin: $('#maintAdmin'), maintPinRow: $('#maintPinRow'), maintPin: $('#maintPin'),
   btnMaintReopen: $('#btnMaintReopen'), btnMaintClosePreview: $('#btnMaintClosePreview'), maintPinErr: $('#maintPinErr'),
-  maintOwnerApi: $('#maintOwnerApi'), btnMaintOwner: $('#btnMaintOwner'), maintTokenRow: $('#maintTokenRow'), maintToken: $('#maintToken'),
-  btnMaintSignin: $('#btnMaintSignin'), maintTokenErr: $('#maintTokenErr'),
+  sitePanel: $('#sitePanel'), configGrid: $('.config-grid'), btnContribute: $('#btnContribute'), stepContrib: $('#stepContrib'),
   modeFree: $('#modeFree'), modeTrace: $('#modeTrace'), traceBox: $('#traceBox'), traceView: $('#traceView'), traceInput: $('#traceInput'),
   traceEmpty: $('#traceEmpty'), traceStats: $('#traceStats'), traceDone: $('#traceDone'), btnTraceFinish: $('#btnTraceFinish'),
   btnTraceRestart: $('#btnTraceRestart'), gradeHint: $('#gradeHint'),
@@ -147,7 +149,9 @@ function storageFailed(e) {
     renderStorageState();
     if (store.warned || !(store.blocked || store.pending)) return;
     store.warned = true;
-    toast(store.blocked ? 'Trình duyệt không cho lưu dữ liệu: bản nháp, lịch sử và cài đặt chỉ giữ đến khi đóng trang.'
+    toast(ADMIN_PAGE ? (store.blocked ? 'Trình duyệt không cho lưu dữ liệu: thiết lập trên trang quản trị chỉ giữ đến khi đóng trang.'
+        : 'Bộ nhớ của trình duyệt đã đầy nên chưa lưu được. Hãy mở trang luyện viết và xóa bớt lịch sử (Cấu hình › Dữ liệu).')
+      : store.blocked ? 'Trình duyệt không cho lưu dữ liệu: bản nháp, lịch sử và cài đặt chỉ giữ đến khi đóng trang.'
       : 'Bộ nhớ của trình duyệt đã đầy nên chưa lưu được. Hãy xóa bớt lịch sử trong tab Cấu hình.');
   }, 0);
 }
@@ -314,7 +318,7 @@ function selectView(name, focusTab) {
   if (name === 'history') renderHistory();
   if (name === 'config') {
     renderConfig();
-    if (Api.base && Admin.token && !Admin.on && !Admin.refused) adminLoad();   // e.g. the server was offline at start
+    if (ADMIN_PAGE && Api.base && Admin.token && !Admin.on && !Admin.refused) adminLoad();   // e.g. the server was offline at start
   }
   if (name === 'practice') autoGrow();
   requestAnimationFrame(() => { updateSticky(); updateFloat(); });
@@ -698,15 +702,17 @@ function applyExam() {
   E.btnModelToggle.setAttribute('aria-pressed', String(settings.showModel));
   $('[data-open="model"]').disabled = covered;
   E.sampleSel.disabled = covered;
+  renderContribBtn();
   if (floatTarget === E.answer && locked) updateFloat();
 }
 
 /* ===================== modal, popover, toast ===================== */
-let modalResolve = null, lastFocus = null;
+let modalResolve = null, lastFocus = null, modalOpenedAt = 0;
 function openModal({ title, sub = '', html = '', buttons = [], kind = '' }) {
   closePop();
   if (modalResolve) { const r = modalResolve; modalResolve = null; r(null); }
   lastFocus = document.activeElement;
+  modalOpenedAt = performance.now();
   E.modal.className = 'modal ' + kind;
   E.modal.innerHTML = `<h2 id="modalTitle">${esc(title)}</h2>${sub ? `<p class="sub">${esc(sub)}</p>` : ''}${html}<div class="actions"></div>`;
   const box = $('.actions', E.modal);
@@ -733,7 +739,10 @@ function closeModal(value) {
   updateFloat();
   if (r) r(value);
 }
-E.backdrop.addEventListener('click', e => { if (e.target === E.backdrop && !E.modal.classList.contains('alarm')) closeModal(null); });
+// a click beside the box closes it - but not the second click of a double click that opened it
+E.backdrop.addEventListener('click', e => {
+  if (e.target === E.backdrop && !E.modal.classList.contains('alarm') && performance.now() - modalOpenedAt > 500) closeModal(null);
+});
 function confirmBox(title, text, okLabel, danger) {
   return openModal({ title, html: `<p>${esc(text)}</p>`, buttons: [{ label: 'Hủy', value: false }, { label: okLabel, value: true, primary: !danger, danger }] }).then(v => v === true);
 }
@@ -1154,9 +1163,9 @@ function timeUsed() {
   if (T.state === 'idle') return null;
   return { used: Math.round(T.total - Math.max(0, remaining())), total: T.total };
 }
-function runAnalysis(text, task, model) {
+function runAnalysis(text, task, model, k = settings.k, strict = false) {
   const before = Spell.engineErrors;
-  const res = A.analyze(text, { task, model, k: settings.k, speller });
+  const res = A.analyze(text, { task, model, k, speller, strict });
   if (Spell.engineErrors - before > 2) {                  // the engine itself is failing, not one odd word: no score
     Spell.broken = true;
     res.spellReady = false;
@@ -1296,7 +1305,7 @@ function renderResults(res) {
       ${res.namesIgnored.length ? `<p class="muted small" style="margin:8px 0 0">Tên riêng không tính là lỗi (có trong đề bài, ở dòng chào hoặc ở chữ ký): <span lang="de">${res.namesIgnored.map(esc).join(', ')}</span>.</p>` : ''}
     </div>
     ${hintItems ? `<div><h3>Nên tự kiểm tra lại (không trừ điểm)</h3><ul class="hintlist">${hintItems}</ul></div>` : ''}
-    ${Api.base && !res.review ? contribHtml(res) : ''}`;
+`;
 
   // correction view: every counted error (R / G) and every hint (?) marked in the text
   const marks = res.occ.map(o => ({ s: o.s, e: o.e, cls: 'm-err', sup: o.u.type, attr: `data-k="${res.uniq.indexOf(o.u)}"` }))
@@ -1876,7 +1885,10 @@ E.btnWordsImport.addEventListener('click', async () => {
 
 /* ===================== the server (Cloudflare Worker + D1): contributions, reports, statistics, admin ===================== */
 const APP_VERSION = '2.1.0';
-const RULES = { MIN_WORDS: 50, MIN_SENTENCES: 10, MIN_SCORE: 90 };       // the same rules are enforced by the server
+// contributed model answers (the owner's plan: a task, a model answer of more than 10 sentences and more than 50 words, spelling
+// 90 or more). The server checks again what it can - lengths, its own simpler word and sentence count, the score sent - and
+// the owner reviews every contribution.
+const RULES = { WORDS_OVER: 50, SENTENCES_OVER: 10, MIN_SCORE: 90, TASK_MIN: 20, TASK_MAX: 3000, MODEL_MAX: 8000 };
 const CONTACT = 'nguyenthanhkienqt13@gmail.com';
 const Api = { base: '', fromSite: '', local: '' };       // base = the admin's own setting, else "api" in site.json
 class ApiError extends Error { constructor(code, message, status) { super(message); this.code = code; this.status = status || 0; } }
@@ -1947,11 +1959,11 @@ function updateApiBase() {
   renderServerUi();
   if (next) {
     loadCommunity(false); loadSharedWords(false); maybeTrackOpen();
-    if (Admin.token && !Admin.refused) adminLoad();       // a remembered admin token: the owner gets the dashboard and the
-  }                                                       // maintenance switch without the closed screen
-  if (lastResult) renderResults(lastResult);              // the contribution box depends on it
+    if (ADMIN_PAGE && Admin.token && !Admin.refused) adminLoad();   // a remembered admin code: the dashboard and the switch
+  }
 }
 function renderServerUi() {
+  renderContribBtn();
   E.btnWordsSuggest.hidden = !Api.base || !settings.words.length;
   pill(E.apiStatus, Admin.on ? 'ok' : Api.base ? 'info' : '', Admin.on ? 'Đang quản trị' : Api.base ? 'Đã có máy chủ' : 'Chưa kết nối');
   E.adminBody.hidden = !Admin.on;
@@ -1959,6 +1971,9 @@ function renderServerUi() {
 }
 
 /* ---- model answers contributed by learners ---- */
+// the lists of approved samples and words: shown from this browser's copy at once, asked again from the server after
+// 15 minutes (an approval reaches returning visitors soon, without a request on every page open)
+const LIST_FRESH_MS = 15 * 60e3;
 let COMMUNITY = [];
 const allSamples = () => SAMPLES.concat(COMMUNITY);
 function cleanSample(x) {
@@ -1979,7 +1994,7 @@ async function loadCommunity(force) {
   const cached = store.get('community', null);
   const fresh = cached && cached.base === Api.base && Array.isArray(cached.list);
   if (fresh) setCommunity(cached.list.map(cleanSample).filter(Boolean));
-  if (!Api.base || (!force && fresh && Date.now() - (+cached.at || 0) < 6 * 3600e3)) return;
+  if (!Api.base || (!force && fresh && Date.now() - (+cached.at || 0) < LIST_FRESH_MS)) return;
   try {
     const j = await apiFetch('/api/samples');
     if (!Array.isArray(j.samples)) throw new ApiError('bad_reply', 'samples');   // never cache a broken reply as "no samples"
@@ -1988,30 +2003,102 @@ async function loadCommunity(force) {
     setCommunity(list);
   } catch (e) { /* offline or server down: the built-in samples and the last list keep working */ }
 }
-function contribHtml(res) {
-  const ok = res.spellReady && res.score >= RULES.MIN_SCORE && res.words >= RULES.MIN_WORDS && res.sentences >= RULES.MIN_SENTENCES && (res.task || '').trim().length >= 20;
-  return `<div class="contrib"><h3>Đóng góp bài mẫu cho mọi người</h3>
-    <p class="small">Điều kiện: có đề bài; bài từ ${RULES.MIN_WORDS} từ và ${RULES.MIN_SENTENCES} câu trở lên; chính tả từ ${RULES.MIN_SCORE} điểm.
-      Bài này: ${res.spellReady ? res.score : '—'} điểm, ${res.words} từ, ${res.sentences} câu.</p>
-    <div class="row"><button type="button" class="btn btn-sm" data-contribute${ok ? '' : ' disabled'}><svg class="ic" aria-hidden="true"><use href="#i-up"/></svg><span>Gửi đề và bài này làm bài mẫu</span></button></div></div>`;
+// The contribution is the task and the model answer in the "Đề bài" and "Bài mẫu" boxes (plan: a task, a model answer of 50+ words
+// and 10+ sentences, spelling score 90+). The page checks the model answer with the same engine as the grading; the server
+// checks the counts again, and the owner reviews every contribution before it is shown to anyone.
+function renderContribBtn() {
+  const show = !!Api.base && !IN_ARTIFACT && !ADMIN_PAGE;
+  E.btnContribute.hidden = !show;
+  E.btnContribute.disabled = contributing || (settings.exam && active() && !traceOn());   // the model is covered in an exam
+  E.stepContrib.hidden = !show;
 }
-async function contribute() {
-  const res = lastResult;
-  if (!res || !Api.base) return;
-  const v = await openModal({ title: 'Đóng góp bài mẫu',
-    html: `<p class="small">Đề bài và bài viết này được gửi để chủ trang duyệt. Khi được duyệt, mọi người dùng trang đều chọn được trong „Đề mẫu…“.</p>
-      <label class="lbl" for="cTitle">Tên đề</label><input id="cTitle" class="field" maxlength="120" value="${esc(firstLine(res.task).slice(0, 120))}">
-      <label class="lbl" for="cAuthor">Tên người đóng góp (không bắt buộc)</label><input id="cAuthor" class="field" maxlength="60" autocomplete="nickname">
-      <label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="cAgree"> Tôi đồng ý để đề bài và bài viết này được đăng công khai trên trang.</label>`,
+let contributing = false;
+const sameText = s => String(s).normalize('NFC').toLowerCase().replace(/\s+/g, ' ').trim();   // as the server compares submissions
+// The learner's own words („Từ của tôi“) are not proof of correct spelling for everyone: for the contribution check they are
+// taken out of the engine (synchronously, so nothing else runs meanwhile) and put back right after. Approved shared words stay.
+function withoutPersonalWords(fn) {
+  const out = [];
+  if (Spell.ready && Spell.added.size) {
+    const shared = new Set(Spell.shared);
+    for (const w of Spell.added) if (!shared.has(w)) { try { Spell.h.removeWord(w); out.push(w); } catch (e) { /* not in the engine */ } }
+  }
+  try { return { value: fn(), personal: out.length }; }
+  finally {
+    for (const w of out) { try { Spell.h.addWord(w); } catch (e) { Spell.added.delete(w); } }
+    if (out.length) suggestCache.clear();
+  }
+}
+function contribErrorText(e) {
+  if (e.code === 'duplicate') return 'Bài mẫu này đã được gửi trước đó.';
+  if (e.code === 'rate_limited') return 'Từ mạng này đã có nhiều đóng góp được gửi trong 24 giờ qua (ví dụ nhiều người dùng chung một Wi-Fi), nên máy chủ tạm chưa nhận thêm. Hãy thử lại vào ngày mai.';
+  if (/^invalid_(task|model)$/.test(e.code) || e.code === 'too_short' || e.code === 'score_low') return `Máy chủ chưa nhận bài: ${e.message} Hãy sửa ô Đề bài hoặc ô Bài mẫu rồi bấm „Đóng góp“ lại.`;
+  return e.message;
+}
+async function contributeModel(prev) {
+  if (!Api.base || contributing) return;
+  const task = E.task.value.normalize('NFC').trim(), model = E.model.value.normalize('NFC').trim();
+  if (!model) { toast('Ô Bài mẫu đang trống. Hãy dán hoặc mở bài mẫu trước.'); E.model.focus(); return; }
+  const key = sameText(model);
+  if (allSamples().some(x => x.model && sameText(x.model) === key)) { toast('Bài mẫu này đã có trong danh sách „Đề mẫu…“.'); return; }
+  contributing = true;
+  setLabel(E.btnContribute, 'Đang kiểm tra…'); renderContribBtn();
+  let res, personal = 0, sentences = 0;
+  try {
+    if (!Spell.ready && !Spell.failed && !Spell.slow) await Promise.race([ensureSpell(), sleep(15000)]);
+    // the standard deduction and the strict check (ALL-CAPS words too), whatever this learner set for their own grading
+    ({ value: res, personal } = withoutPersonalWords(() => runAnalysis(model, task, '', DEFAULTS.k, true)));
+    sentences = A.closedSentenceCount(model);
+  } finally { contributing = false; setLabel(E.btnContribute, 'Đóng góp'); renderContribBtn(); }
+  const n = x => nfInt.format(x);
+  const own = [settings.k !== DEFAULTS.k && `tính theo mức trừ chuẩn ${DEFAULTS.k} điểm cho mỗi lỗi / 100 từ`, personal && 'không tính các từ trong „Từ của tôi“'].filter(Boolean);
+  const checks = [
+    [task.length >= RULES.TASK_MIN && task.length <= RULES.TASK_MAX, `Có đề bài, từ ${n(RULES.TASK_MIN)} đến ${n(RULES.TASK_MAX)} ký tự`,
+      task ? `hiện có ${n(task.length)} ký tự` : 'ô Đề bài đang trống'],
+    [res.words > RULES.WORDS_OVER, `Bài mẫu trên ${RULES.WORDS_OVER} từ`, `hiện có ${n(res.words)} từ`],
+    [sentences > RULES.SENTENCES_OVER, `Bài mẫu trên ${RULES.SENTENCES_OVER} câu`, `hiện có ${n(sentences)} câu kết thúc bằng dấu . ! ?`],
+    [res.spellReady && res.score >= RULES.MIN_SCORE, `Chính tả bài mẫu từ ${RULES.MIN_SCORE} điểm trở lên`,
+      res.spellReady ? [`hiện đạt ${res.score} điểm, ${res.errors} lỗi`].concat(own).join('; ')
+        : Spell.broken || Spell.failed ? 'chưa chấm được vì bộ kiểm tra chính tả chưa sẵn sàng; hãy tải lại trang rồi thử lại'
+        : 'từ điển đang tải nên chưa chấm được; hãy đợi tải xong rồi bấm „Đóng góp“ lại']
+  ];
+  if (model.length > RULES.MODEL_MAX) checks.push([false, `Bài mẫu không quá ${n(RULES.MODEL_MAX)} ký tự`, `hiện có ${n(model.length)} ký tự`]);
+  const ok = checks.every(c => c[0]);
+  const list = `<ul class="checklist">${checks.map(([pass, label, detail]) =>
+    `<li class="${pass ? 'ok' : 'bad'}"><span class="mark" aria-hidden="true">${pass ? '✓' : '✗'}</span><span>${esc(label)} <span class="muted">(${esc(detail)})</span><span class="sr-only">${pass ? ': đạt' : ': chưa đạt'}</span></span></li>`).join('')}</ul>`;
+  if (!ok) {
+    const wrong = res.spellReady ? res.uniq.slice(0, 8).map(u => u.w) : [];
+    await openModal({ title: 'Chưa đóng góp được', html: `<p class="small">Đề bài và bài mẫu cần đạt đủ các điều kiện sau:</p>${list}` +
+      (wrong.length ? `<p class="small">Từ bị đánh dấu sai trong bài mẫu: <span lang="de">${esc(wrong.join(', '))}</span>${res.uniq.length > wrong.length ? '…' : ''}.
+        Để xem chi tiết và gợi ý sửa, dán bài mẫu vào ô Bài viết rồi bấm Chấm điểm${own.length ? ' (khi chấm bài viết, trang dùng cài đặt riêng của bạn, nên số lỗi có thể khác)' : ''}.</p>` : ''),
+      buttons: [{ label: 'Đóng', value: false, primary: true }] });
+    return;
+  }
+  const v = await openModal({ title: 'Đóng góp đề và bài mẫu',
+    html: `<p class="small">Nội dung ô Đề bài và ô Bài mẫu được gửi để chủ trang duyệt. Khi được duyệt, mọi người chọn được trong „Đề mẫu…“ để luyện tập.</p>${list}
+      ${prev && prev.problem ? `<p class="field-err" role="alert">${esc(prev.problem)}</p>` : ''}
+      <label class="lbl" for="cTitle">Tên đề</label><input id="cTitle" class="field" maxlength="120" value="${esc(prev ? prev.title : firstLine(task).slice(0, 120))}">
+      <label class="lbl" for="cAuthor">Tên người đóng góp (không bắt buộc)</label><input id="cAuthor" class="field" maxlength="60" autocomplete="nickname" value="${esc(prev ? prev.author : '')}">
+      <label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="cAgree"${prev && prev.agree ? ' checked' : ''}> Tôi đồng ý để đề bài và bài mẫu này được đăng công khai trên trang.</label>`,
     buttons: [{ label: 'Hủy', value: false }, { label: 'Gửi đóng góp', value: true, primary: true }] });
   if (!v) return;
-  const title = $('#cTitle', E.modal).value.trim(), author = $('#cAuthor', E.modal).value.trim();
-  if (!$('#cAgree', E.modal).checked) { toast('Cần đồng ý đăng công khai thì mới gửi được.'); return; }
+  const cur = { title: $('#cTitle', E.modal).value.trim(), author: $('#cAuthor', E.modal).value.trim(), agree: $('#cAgree', E.modal).checked };
+  if (cur.title.length < 3) return contributeModel(Object.assign(cur, { problem: 'Tên đề cần từ 3 ký tự trở lên.' }));
+  if (!cur.agree) return contributeModel(Object.assign(cur, { problem: 'Cần đồng ý đăng công khai thì mới gửi được.' }));
+  if (contributing) return;
+  contributing = true;                                    // no second dialog while this one is on its way
+  setLabel(E.btnContribute, 'Đang gửi…'); renderContribBtn();
+  let again = null;
   try {
-    await apiFetch('/api/samples', { method: 'POST', body: { title, task: res.task, model: res.rawText, score: res.score, author } });
-    toast('Đã gửi bài mẫu. Bài sẽ hiện cho mọi người sau khi được duyệt. Cảm ơn bạn!');
-  } catch (e) { toast(e.code === 'duplicate' ? 'Bài này đã được gửi trước đó.' : e.message); }
+    await apiFetch('/api/samples', { method: 'POST', body: { title: cur.title, task, model, score: res.score, author: cur.author } });
+    toast('Đã gửi đề và bài mẫu. Bài sẽ hiện trong „Đề mẫu…“ sau khi chủ trang duyệt. Cảm ơn bạn!');
+  } catch (e) {
+    // a field of the form (title, name): the form again with the reason; the boxes' content: a message saying what to fix
+    if (e.code === 'invalid_title' || e.code === 'invalid_author') again = Object.assign(cur, { problem: e.message });
+    else toast(contribErrorText(e));
+  } finally { contributing = false; setLabel(E.btnContribute, 'Đóng góp'); renderContribBtn(); }
+  if (again) return contributeModel(again);
 }
+E.btnContribute.addEventListener('click', () => contributeModel());
 
 /* ---- the shared dictionary: approved words for everyone, suggestions from learners ---- */
 function applySharedWords() {
@@ -2030,7 +2117,7 @@ async function loadSharedWords(force) {
   const cached = store.get('sharedWords', null);
   const fresh = cached && cached.base === Api.base && Array.isArray(cached.words);
   if (fresh) { Spell.shared = cached.words.filter(w => typeof w === 'string' && WORD_OK.test(w)).slice(0, 5000); applySharedWords(); }
-  if (!Api.base || (!force && fresh && Date.now() - (+cached.at || 0) < 6 * 3600e3)) return;
+  if (!Api.base || (!force && fresh && Date.now() - (+cached.at || 0) < LIST_FRESH_MS)) return;
   try {
     const j = await apiFetch('/api/words');
     if (!Array.isArray(j.words)) throw new ApiError('bad_reply', 'words');       // never cache a broken reply as "no words"
@@ -2046,7 +2133,6 @@ async function suggestWords(list) {
   } catch (e) { toast(e.message); }
 }
 document.addEventListener('click', e => {
-  if (e.target.closest('[data-contribute]')) { contribute(); return; }
   const sg = e.target.closest('[data-suggest]');
   if (sg) { closePop(); suggestWords([sg.dataset.suggest]); return; }
   if (e.target.closest('[data-report]')) reportBug();
@@ -2136,10 +2222,11 @@ const Admin = { token: '', on: false, tab: 'stats', stats: null, refused: false,
 const IN_ARTIFACT = !!(window.claude && typeof window.claude.use === 'function');   // claude.ai: no outside requests
 function adminNote(text, bad) { E.adminNote.textContent = text; E.adminNote.style.color = bad ? 'var(--red)' : ''; }
 function initServer() {
-  if (IN_ARTIFACT) { E.adminPanel.hidden = true; renderServerUi(); return; }
+  E.adminPanel.hidden = !ADMIN_PAGE || IN_ARTIFACT;        // the server's admin console lives on quan-tri.html only
+  if (IN_ARTIFACT) { renderServerUi(); return; }
   const local = cleanApiUrl(store.get('api', ''));
   Api.local = local || '';
-  const t = store.get('adminToken', '');
+  const t = ADMIN_PAGE ? store.get('adminToken', '') : '';  // the learner page never holds the admin code
   if (typeof t === 'string' && t) { Admin.token = t; E.adminToken.value = t; E.adminRemember.checked = true; }
   E.apiUrl.value = Api.local || Api.fromSite;
   updateApiBase();
@@ -2173,7 +2260,7 @@ E.btnAdminLogout.addEventListener('click', () => {
   Object.assign(Admin, { token: '', on: false, stats: null, refused: false });
   store.del('adminToken'); E.adminToken.value = ''; E.adminRemember.checked = false;
   adminNote('Đã thoát quản trị trên máy này.');
-  renderServerUi(); applySite();                          // a closed page closes for this browser too
+  renderServerUi(); applySite();                          // the switch goes back to producing the site.json content
 });
 // One sign-in per (code, server) at a time; a result for a code or a server that has changed meanwhile is dropped.
 function adminLoad() {
@@ -2192,7 +2279,7 @@ function adminLoad() {
       if (err.code === 'unauthorized') Admin.refused = true;
       adminNote(err.code === 'unauthorized' ? 'Mã quản trị không đúng.' : ownerErrorText(err), true);
     } else { Admin.stats = stats; Admin.on = true; Admin.refused = false; adminNote(''); }
-    renderServerUi(); applySite();                        // signed in: the closed screen gives way to the owner's banner
+    renderServerUi(); applySite();                        // signed in or out: the switch and the banner's button change their action
     if (Admin.on) { renderAdminCounts(); selectAdmTab(Admin.tab); }
   })().finally(() => { if (Admin.loading && Admin.loading.p === p) Admin.loading = null; });
   Admin.loading = { token, base, p };
@@ -2204,25 +2291,6 @@ function adminRefused(msg) {
   renderServerUi(); applySite();
   adminNote(msg || 'Mã quản trị không còn đúng. Hãy nhập lại mã và bấm „Kết nối“.', true);
 }
-// the closed screen of the published page: the owner signs in with the admin token to get back in
-E.btnMaintOwner.addEventListener('click', () => {
-  E.maintOwnerApi.hidden = true; E.maintTokenRow.hidden = false; E.maintTokenErr.hidden = true;
-  E.maintToken.focus();
-});
-E.btnMaintSignin.addEventListener('click', async () => {
-  const token = E.maintToken.value.trim();
-  E.maintTokenErr.hidden = true;
-  if (tokenProblem(token)) { showErr(E.maintTokenErr, tokenProblem(token)); E.maintToken.focus(); return; }
-  E.btnMaintSignin.disabled = true;
-  Admin.token = token; Admin.refused = false; E.adminToken.value = token;
-  try { await adminLoad(); } finally { E.btnMaintSignin.disabled = false; }
-  if (Admin.on) {
-    E.maintToken.value = ''; E.maintTokenRow.hidden = true;
-    if (E.adminRemember.checked) store.set('adminToken', token);
-    toast('Đã đăng nhập quản trị. Người xem khác vẫn thấy màn hình bảo trì cho đến khi bạn bấm „Mở lại trang“.');
-  } else { showErr(E.maintTokenErr, E.adminNote.textContent || 'Không đăng nhập được.'); E.maintToken.select(); }
-});
-E.maintToken.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); E.btnMaintSignin.click(); } });
 function renderAdminCounts() {
   const p = (Admin.stats && Admin.stats.pending) || {};
   E.admCntSamples.textContent = p.samples ? `(${p.samples})` : '';
@@ -2265,9 +2333,10 @@ function statRows(st) {                                   // one row per day, ol
 }
 const ddmm = d => d.slice(8, 10) + '.' + d.slice(5, 7);
 function niceMax(v) { const p = 10 ** Math.floor(Math.log10(Math.max(1, v))); for (const m of [1, 2, 5, 10]) if (m * p >= v) return m * p; return 10 * p; }
-// one series (page opens per day): bars <= 24 px, 4 px rounded top, square at the baseline, 2 px gaps; hover/focus tooltip
-function barChartSvg(rows) {
-  const W = 640, H = 190, L = 36, R = 8, T = 10, B = 24, plotH = H - T - B, base = T + plotH;
+// one series (page opens per day): bars <= 24 px, 4 px rounded top, square at the baseline, 2 px gaps; hover/focus tooltip.
+// Drawn at the box's real width (1 unit = 1 px), so the axis text keeps its size on a phone instead of shrinking with the SVG.
+function barChartSvg(rows, width) {
+  const W = Math.max(260, Math.min(1400, Math.round(width) || 640)), H = 190, L = 36, R = 8, T = 10, B = 24, plotH = H - T - B, base = T + plotH;
   const top = niceMax(Math.max(1, ...rows.map(r => r.open)));
   const band = (W - L - R) / rows.length, bw = Math.min(24, Math.max(2, band - 2));
   let g = '';
@@ -2293,6 +2362,7 @@ function renderStats() {
   const load = avg(sum('loadMs'), sum('loadN')), gr = avg(sum('gradeMs'), sum('gradeN'));
   const p = st.pending || {};
   const tile = (v, k) => `<div class="tile"><div class="v">${v}</div><div class="k">${esc(k)}</div></div>`;
+  chartW = E.admStats.clientWidth;
   E.admStats.innerHTML = `
     <div class="tiles">
       ${tile(nfInt.format(sum('open')), 'Lượt mở trang (30 ngày)')}${tile(nfInt.format(sum('grade')), 'Lượt chấm bài')}${tile(nfInt.format(sum('trace')), 'Lượt luyện in vết')}
@@ -2300,7 +2370,7 @@ function renderStats() {
       ${tile(load == null ? '—' : nf1.format(load / 1000) + ' giây', 'Tải từ điển trung bình')}${tile(gr == null ? '—' : nfInt.format(Math.round(gr)) + ' ms', 'Chấm một bài trung bình')}
       ${tile(`${p.samples || 0} · ${p.words || 0} · ${p.reports || 0}`, 'Chờ xử lý: bài mẫu · từ · báo lỗi')}
     </div>
-    <div><h3>Lượt mở trang mỗi ngày</h3><div class="chart" id="admChart">${barChartSvg(rows)}<div class="chart-tip" hidden></div></div></div>
+    <div><h3>Lượt mở trang mỗi ngày</h3><div class="chart" id="admChart">${barChartSvg(rows, chartW)}<div class="chart-tip" hidden></div></div></div>
     <details><summary class="small">Xem dạng bảng</summary><div class="tbl-wrap" style="margin-top:8px"><table class="tbl"><thead><tr><th>Ngày</th><th>Mở trang</th><th>Chấm</th><th>In vết</th><th>Báo lỗi</th><th>Lỗi trang</th><th>Tải từ điển TB</th><th>Chấm TB</th></tr></thead><tbody>
       ${rows.slice().reverse().map(r => `<tr><td>${ddmm(r.day)}</td><td class="num">${r.open}</td><td class="num">${r.grade}</td><td class="num">${r.trace}</td><td class="num">${r.report}</td><td class="num">${r.error}</td>
         <td class="num">${r.loadN ? nf1.format(r.loadMs / r.loadN / 1000) + ' s' : '—'}</td><td class="num">${r.gradeN ? Math.round(r.gradeMs / r.gradeN) + ' ms' : '—'}</td></tr>`).join('')}
@@ -2323,6 +2393,18 @@ function renderStats() {
   chart.addEventListener('focusout', () => { tip.hidden = true; });
   $('#admRefresh', E.admStats).addEventListener('click', adminLoad);
 }
+// the window was resized (a phone turned, a sidebar opened): only the chart is drawn again, at the new width
+let chartW = 0, chartTimer = 0;
+window.addEventListener('resize', () => {
+  clearTimeout(chartTimer);
+  chartTimer = setTimeout(() => {
+    const chart = Admin.stats && !E.admStats.hidden && $('#admChart', E.admStats), svg = chart && $('svg', chart);
+    const w = E.admStats.clientWidth;
+    if (!svg || !w || Math.abs(w - chartW) < 16) return;
+    chartW = w;
+    svg.outerHTML = barChartSvg(statRows(Admin.stats), w);   // same rows: the tooltip keeps working (it reads data-i)
+  }, 150);
+});
 const KIND_LABEL = { grading: 'Chấm sai', display: 'Hiển thị / thao tác', file: 'Tệp', other: 'Khác', crash: 'Lỗi trang' };
 // null = that source could not be checked (no answer, an error reply): shown as such, never as "not found"
 function verdictPill(c) {
@@ -2436,19 +2518,23 @@ function writeLocalSite(conf) {
   return store.set('site', Object.assign({}, Site.conf, Site.local));
 }
 const maintActive = (c = Site.conf) => c.maintenance && !(c.until && Date.now() >= c.until);
+// The owner's view: quan-tri.html, or an editor of the claude.ai page. The learner page never offers the owner's tools.
+const ownerView = () => ADMIN_PAGE || (Site.mode === 'shared' && Site.isAdmin === true);
 function applySite() {
   const on = maintActive(), shared = Site.mode === 'shared', stat = Site.mode === 'static';
-  // the owner works on while the page is closed: editors of the claude.ai page, or the signed-in admin of the server
-  const adminView = (shared && Site.isAdmin === true) || (stat && Admin.on);
+  // the owner works on while the page is closed (a banner instead of the closed screen); learners get the screen
+  const adminView = ownerView();
   const show = Site.preview || (on && !adminView && (Site.mode === 'local' || stat || shared));
   setScreen(show);
   E.maintBanner.hidden = !(adminView && on && !Site.preview);
   if (!E.maintBanner.hidden) {
-    E.maintBannerText.textContent = 'Trang đang tạm đóng bảo trì' + (Site.conf.until ? ` đến ${dateStr(Site.conf.until)}` : '') +
-      ': người xem khác chỉ thấy thông báo bảo trì.';
+    E.maintBannerText.textContent = (ADMIN_PAGE ? 'Trang luyện viết đang tạm đóng bảo trì' : 'Trang đang tạm đóng bảo trì') +
+      (Site.conf.until ? ` đến ${dateStr(Site.conf.until)}` : '') + (ADMIN_PAGE ? ': người học chỉ thấy thông báo bảo trì.' : ': người xem khác chỉ thấy thông báo bảo trì.');
+    // static host, not signed in to the server: the button can only produce the site.json content (as in the panel)
+    E.btnBannerReopen.textContent = stat && !(Api.base && Admin.on) ? 'Tạo site.json để mở lại' : 'Mở lại trang';
     E.btnBannerReopen.disabled = Site.saving;
   }
-  E.cfgDot.hidden = !((on && (adminView || Site.mode === 'local' || stat)) || (adminView && siteMismatch()));
+  E.cfgDot.hidden = !(adminView && !ADMIN_PAGE && (on || siteMismatch()));   // the tab bar exists on the learner page only
   renderSitePanel();
 }
 // static host with a server: site.json says "closed" while the server state in force says "open" - if the server stopped
@@ -2471,7 +2557,6 @@ function setScreen(show) {
       if (!Site.preview && T.state === 'running') { pauseTimer(); T.maintPaused = true; persistTimer(); }
       E.maintPin.value = ''; E.maintPinErr.hidden = true;
     } else {
-      E.maintTokenRow.hidden = true; E.maintToken.value = ''; E.maintTokenErr.hidden = true;
       if (T.maintPaused && T.state === 'paused') toast('Trang đã mở lại. Đồng hồ đang tạm dừng — bấm „Tiếp tục“ để làm bài tiếp.');
       if (T.maintPaused) { T.maintPaused = false; persistTimer(); }
     }
@@ -2486,15 +2571,11 @@ function setScreen(show) {
     if (left > 0) E.maintEta.textContent = `Dự kiến mở lại lúc ${dateStr(until)} (còn ${fmt(left)})`;
     E.maintTimerNote.hidden = !T.maintPaused;
     const local = Site.mode === 'local';
-    // reopen controls: local copy (PIN if set); published page only when this viewer's rights are unknown (the server decides);
-    // a static host has no reopen button - the owner edits site.json (hint)
-    E.maintAdmin.hidden = !(Site.preview || local || (Site.mode === 'shared' && Site.isAdmin === null));
-    // static host: without a server the owner edits site.json; with one, the owner signs in here (link -> token field)
-    const owner = !Site.preview && Site.mode === 'static';
-    E.maintOwnerHint.hidden = !owner || !!Api.base;
-    if (!owner || !Api.base) E.maintTokenRow.hidden = true;
-    E.maintOwnerApi.hidden = !owner || !Api.base || !E.maintTokenRow.hidden;
-    E.maintPinRow.hidden = Site.preview || !(local && Site.local.pinHash);
+    // no owner controls on the learner's closed screen: the owner works from quan-tri.html. Only on the claude.ai page,
+    // when this viewer's rights could not be read, a reopen button lets the platform decide (editors pass, others are refused)
+    E.maintAdmin.hidden = !(Site.preview || (Site.mode === 'shared' && Site.isAdmin === null));
+    E.maintOwnerHint.hidden = Site.preview || !local;      // the offline copy: whoever has the folder has quan-tri.html
+    E.maintPinRow.hidden = true;
     E.btnMaintReopen.hidden = Site.preview;
     E.btnMaintReopen.disabled = Site.saving;
     E.btnMaintClosePreview.hidden = !Site.preview;
@@ -2507,6 +2588,7 @@ function setScreen(show) {
 }
 function pill(el, kind, text) { el.className = 'pill ' + kind; el.textContent = text; }
 function renderSitePanel() {
+  E.sitePanel.hidden = !ownerView();
   const c = Site.conf, on = maintActive(), local = Site.mode === 'local', shared = Site.mode === 'shared';
   const stat = Site.mode === 'static';
   if (Site.mode === 'connecting' || (stat && !Site.staticState)) pill(E.siteStatus, 'info', 'Đang kiểm tra…');
@@ -2530,7 +2612,7 @@ function renderSitePanel() {
     (Api.local && !Api.fromSite ? ' Lưu ý: site.json trên trang chưa có dòng "api", nên người xem chưa biết máy chủ này và trạng thái trên máy chủ chưa áp dụng cho họ. Hãy thêm "api": "' + Api.local + '" vào site.json rồi Commit.'
       : Api.local && Api.local !== Api.fromSite ? ` Lưu ý: bạn đang dùng máy chủ ${Api.local}, khác với máy chủ ghi trong site.json (${Api.fromSite}); thay đổi qua máy chủ này chỉ áp dụng cho trình duyệt dùng cùng địa chỉ.` : '');
   E.siteScope.textContent = {
-    local: 'Bản chạy từ tệp trên máy: trạng thái đóng / mở chỉ áp dụng cho trình duyệt này. Khi đóng, màn hình bảo trì che toàn bộ ứng dụng cho đến khi mở lại (hoặc đến giờ mở lại đã đặt).',
+    local: 'Bản chạy từ tệp trên máy: trạng thái đóng / mở áp dụng cho trang luyện viết (index.html) mở bằng trình duyệt này. Khi đóng, trang luyện viết chỉ hiện màn hình bảo trì cho đến khi mở lại tại đây (hoặc đến giờ mở lại đã đặt).',
     static: (Api.base ? apiText : fileText) +
       (Site.staticState === 'error' ? ' Lần đọc site.json gần nhất bị lỗi (tệp sai định dạng JSON hoặc mất mạng); trang giữ trạng thái đọc được trước đó.' : '') +
       (Site.lastChecked ? ` Kiểm tra lần cuối lúc ${new Date(Site.lastChecked).toLocaleTimeString('vi-VN')}.` : ''),
@@ -2571,6 +2653,13 @@ function fillSiteForm(force) {
 }
 [E.maintMessage, E.maintUntil].forEach(el => el.addEventListener('input', () => { Site.formDirty = true; }));
 function siteNote(text, bad) { E.siteNote.textContent = text; E.siteNote.style.color = bad ? 'var(--red)' : ''; }
+// The result note sits at the end of „Trang và bảo trì“. When the owner acted from elsewhere (the banner's "Mở lại trang"
+// on the writing desk, or at the top of quan-tri.html above the dashboard), a warning or an error is also shown as a toast.
+function siteNoteOutOfSight() {
+  if (currentView !== 'config' || E.sitePanel.hidden) return true;
+  const r = E.siteNote.getBoundingClientRect();
+  return r.bottom < 0 || r.top > (window.innerHeight || document.documentElement.clientHeight);
+}
 async function dbWrite(fn) {
   try { return await fn(); }
   catch (e) {
@@ -2593,6 +2682,12 @@ async function saveConf(conf, okMsg) {
   conf = Object.assign(cleanConf(conf), { updatedAt: Date.now() });
   if (Site.mode === 'local') {
     const stored = writeLocalSite(conf);
+    if (!stored && ADMIN_PAGE) {       // the learner page reads this browser's storage: nothing reached it, so nothing changed
+      unsaved.delete('site'); setTimeout(renderStorageState, 0);   // not kept in memory either: it would show a state nobody has
+      readLocalSite(); applySite();
+      siteNote('Chưa lưu được: trình duyệt không cho lưu dữ liệu (bị chặn hoặc bộ nhớ đã đầy), nên trang luyện viết không nhận được thay đổi. Trạng thái vẫn như trước.', true);
+      return 'storage';
+    }
     Site.formDirty = false;
     applySite(); fillSiteForm(true);
     siteNote(stored ? okMsg : okMsg + ' Trình duyệt không cho lưu dữ liệu, nên trạng thái này chỉ giữ đến khi đóng trang.', !stored);
@@ -2609,17 +2704,17 @@ async function saveConf(conf, okMsg) {
       store.set('apiSite', { base: Api.base, conf: c });
       const other = Api.base !== Api.fromSite;            // visitors read the server named in site.json, not this one
       if (!other && Site.fileConf && maintActive(Site.fileConf) && !maintActive(c)) {
-        warn = ` site.json vẫn ghi „${stateWord(Site.fileConf)}“: hãy cập nhật site.json (Cấu hình › Trang và bảo trì) để trạng thái không đổi ngược khi máy chủ không trả lời.`;
+        warn = ` site.json vẫn ghi „${stateWord(Site.fileConf)}“: hãy cập nhật site.json theo nội dung trong phần „Trang và bảo trì“ để trạng thái không đổi ngược khi máy chủ không trả lời.`;
       }
       siteNote(okMsg + (other ? ` Đã lưu trên máy chủ ${Api.base}. Lưu ý: người xem dùng máy chủ ghi trong site.json (${Api.fromSite || 'chưa có'}), nên thay đổi này chưa áp dụng cho họ.`
         : ' Đã áp dụng qua máy chủ; trang đang mở ở máy khác cập nhật trong vòng một phút.') + warn, !!warn);
-      if (warn && currentView !== 'config') toast(okMsg + warn);   // e.g. the banner's "Mở lại trang" on the writing desk
+      if (warn && siteNoteOutOfSight()) toast(okMsg + warn);
     } catch (e) {
       code = e.code || 'error';
       if (code === 'unauthorized') adminRefused('Mã quản trị không còn đúng. Hãy nhập lại mã và bấm „Kết nối“.');
       const text = code === 'unauthorized' ? 'Mã quản trị không còn đúng. Hãy đăng nhập lại ở phần „Quản trị máy chủ“.' : ownerErrorText(e);
       siteNote(text, true);
-      if (currentView !== 'config' && !Site.screen) toast(text);    // e.g. the banner's "Mở lại trang" on the writing desk
+      if (siteNoteOutOfSight() && !Site.screen) toast(text);
     } finally { Site.saving = false; applySite(); }
     if (!code) fillSiteForm(true);
     return code;
@@ -2629,7 +2724,9 @@ async function saveConf(conf, okMsg) {
     E.siteJsonBox.hidden = false;
     siteNote(conf.maintenance ? 'Đã tạo nội dung site.json để TẠM ĐÓNG trang. Trang chỉ đóng sau khi tệp được Commit lên GitHub.'
       : 'Đã tạo nội dung site.json để MỞ LẠI trang. Trang chỉ mở lại sau khi tệp được Commit lên GitHub.');
+    const away = siteNoteOutOfSight();                    // e.g. the banner's "Mở lại trang" at the top of quan-tri.html
     E.siteJson.focus({ preventScroll: true }); E.siteJson.select();
+    if (away && currentView === 'config') E.siteJsonBox.scrollIntoView({ block: 'center' });
     return '';
   }
   if (Site.mode !== 'shared' || !Site.ref) return 'unavailable';
@@ -2646,7 +2743,7 @@ async function saveConf(conf, okMsg) {
     if (code === 'invalid_argument') Site.readOnly = true;
     if (FINAL_CODES.has(code)) { Site.mode = 'unavailable'; Site.conf = cleanConf(null); }
     siteNote(text, true);
-    if (currentView !== 'config' && !Site.screen) toast(text);   // e.g. the banner's "Mở lại trang" on the writing desk
+    if (siteNoteOutOfSight() && !Site.screen) toast(text);
   } finally {
     Site.saving = false;
     applySite();
@@ -2674,9 +2771,9 @@ E.btnMaintToggle.addEventListener('click', async () => {
   if (f.error) { siteNote(f.error, true); E.maintUntil.focus(); return; }
   const direct = Site.mode === 'static' && Api.base && Admin.on;
   if (Site.mode !== 'static' || direct) {                 // static without the server: only file content is produced
-    const who = Site.mode === 'local' ? 'Trình duyệt này sẽ chỉ hiện màn hình bảo trì'
+    const who = Site.mode === 'local' ? 'Trang luyện viết (index.html) mở bằng trình duyệt này sẽ chỉ hiện màn hình bảo trì'
       : direct && Api.base !== Api.fromSite ? `Chỉ trình duyệt dùng máy chủ ${Api.base} thấy màn hình bảo trì (người xem dùng máy chủ ghi trong site.json: ${Api.fromSite || 'chưa có'})`
-      : direct ? 'Người mở trang (trừ trình duyệt đang đăng nhập quản trị) sẽ chỉ thấy màn hình bảo trì'
+      : direct ? 'Người mở trang luyện viết, kể cả trên máy này, sẽ chỉ thấy màn hình bảo trì (trang quản trị này vẫn dùng được)'
       : 'Người mở trang (trừ chủ trang và người có quyền chỉnh sửa) sẽ chỉ thấy màn hình bảo trì';
     const until = f.until ? ` đến ${dateStr(f.until)}` : ' cho đến khi được mở lại';
     const lag = direct ? ' Trang đang mở ở máy khác chuyển sang màn hình bảo trì trong vòng một phút.' : '';
@@ -2692,7 +2789,12 @@ E.btnMaintSave.addEventListener('click', async () => {
 E.btnClearUntil.addEventListener('click', () => { E.maintUntil.value = ''; Site.formDirty = true; });
 E.btnMaintPreview.addEventListener('click', () => { Site.preview = true; applySite(); });
 E.btnMaintClosePreview.addEventListener('click', () => { Site.preview = false; applySite(); E.btnMaintPreview.focus(); });
-E.btnBannerReopen.addEventListener('click', () => saveConf(Object.assign({}, Site.conf, { maintenance: false, until: 0 }), 'Đã mở lại trang.'));
+E.btnBannerReopen.addEventListener('click', () => {
+  if (Site.mode === 'local' && Site.local.pinHash && !Site.cfgUnlocked) {   // the PIN guards quan-tri.html on a shared computer
+    siteNote('Hãy nhập mã PIN quản trị ở phần „Trang và bảo trì“ để mở lại trang.', true); E.cfgPin.focus(); return;
+  }
+  saveConf(Object.assign({}, Site.conf, { maintenance: false, until: 0 }), 'Đã mở lại trang.');
+});
 
 /* ---- local PIN (SHA-256 with a random salt, kept in this browser) ---- */
 async function hashPin(pin, salt) {
@@ -3005,10 +3107,18 @@ function restore() {
   renderConfig();
   updateSticky();
 }
-restore();
-if ('requestIdleCallback' in window) requestIdleCallback(() => initSpell(), { timeout: 1200 }); else setTimeout(initSpell, 300);
-initServer();                                             // before initSite: the admin's own server address is known first
-initSite();
-initBackup();
+if (ADMIN_PAGE) {
+  // the owner's console: no exam clock, draft, dictionary or backups here - the server dashboard and the maintenance switch
+  E.configGrid.prepend(E.adminPanel);
+  selectView('config');
+  initServer();
+  initSite();
+} else {
+  restore();
+  if ('requestIdleCallback' in window) requestIdleCallback(() => initSpell(), { timeout: 1200 }); else setTimeout(initSpell, 300);
+  initServer();                                           // before initSite: the admin's own server address is known first
+  initSite();
+  initBackup();
+}
 window.B1AppStarted = true;
 })();

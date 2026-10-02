@@ -70,6 +70,15 @@
     for (let i = 0; i < toks.length; i++) if (isSentenceStart(work, toks, i)) n++;
     return n;
   }
+  // Sentences closed by . ! or ? (the rule for contributed model answers): a closing formula or a signature written
+  // without a full stop ("Viele Grüße / Kien") is not counted as a sentence.
+  function closedSentenceCount(text) {
+    const work = maskText(String(text || '').normalize('NFC')), toks = tokenize(work);
+    let n = 0;
+    for (let i = 1; i < toks.length; i++) if (isSentenceStart(work, toks, i)) n++;
+    if (toks.length && /^[^\p{L}\p{N}]*[.!?]/u.test(work.slice(toks[toks.length - 1].e)) && !/^\s*(\.\.|…)/.test(work.slice(toks[toks.length - 1].e))) n++;
+    return n;
+  }
 
   /* ---------- spelling ---------- */
   // Strong verbs whose imperative changes the vowel (gib, nimm, sieh, lies …): "geb!" is a real learner error.
@@ -81,9 +90,10 @@
     try { stems = speller.stem(w + 'e'); } catch (e) { return false; }
     return (stems || []).some(s => /^\p{Ll}+(en|ern|eln)$/u.test(s) && s.startsWith(w.slice(0, 3)));
   }
-  function spellOk(t, work, speller) {
+  // strict (contributed model answers): ALL-CAPS words are checked too (Hunspell accepts HAUS for Haus, and known acronyms)
+  function spellOk(t, work, speller, strict) {
     const w = t.clean;
-    if (/^\p{Lu}{2,}$/u.test(w.replace(/[-'’]/g, ''))) return true;   // ALL CAPS (OK, USA) - ignored like in Word
+    if (!strict && /^\p{Lu}{2,}$/u.test(w.replace(/[-'’]/g, ''))) return true;   // ALL CAPS (OK, USA) - ignored like in Word
     if (speller.spell(w)) return true;
     if (work[t.e] === '.' && speller.spell(w + '.')) return true;        // usw. bzw. ca. Nr.
     const ap = w.match(/^(\p{L}+)['’]s$/u);                              // geht's, gibt's
@@ -312,7 +322,7 @@
 
   /* ---------- the whole grading pass ---------- */
   function analyze(rawText, opts) {
-    const o = Object.assign({ task: '', model: '', k: 10, speller: null }, opts || {});
+    const o = Object.assign({ task: '', model: '', k: 10, speller: null, strict: false }, opts || {});
     const text = rawText.normalize('NFC');
     const work = maskText(text);
     const sp = o.speller && o.speller.ready ? o.speller : null;
@@ -324,7 +334,7 @@
     for (let i = 0; i < toks.length; i++) {
       const t = toks[i];
       let type = '';
-      if (sp && !spellOk(t, work, sp)) {
+      if (sp && !spellOk(t, work, sp, o.strict)) {
         if (names.has(t.clean)) namesIgnored.add(t.clean);
         else type = 'R';
       }
@@ -356,7 +366,7 @@
     };
   }
 
-  return { EXTRA_WORDS, HINT_TEXT, ABBR, STOP, maskText, tokenize, countWords, isSentenceStart, sentenceCount,
+  return { EXTRA_WORDS, HINT_TEXT, ABBR, STOP, maskText, tokenize, countWords, isSentenceStart, sentenceCount, closedSentenceCount,
     spellOk, suggestFor, osa, noUml, cap, uniqueWords, similarFromModel, letterChecks, leitpunkte, findHints,
     looksLikeNonNoun, nameCandidates, compareTexts, analyze };
 });
