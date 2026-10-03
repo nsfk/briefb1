@@ -12,7 +12,7 @@
 
 /* SITE */
 	Cập nhật: 2026-10-03
-	Ngôn ngữ: Tiếng Việt (giao diện), Tiếng Đức (nội dung luyện viết)
+	Ngôn ngữ: Tiếng Việt (giao diện mặc định), English, Deutsch (giao diện); Tiếng Đức (nội dung luyện viết)
 	Chuẩn: HTML5, CSS3, JavaScript, WebAssembly, schema.org (JSON-LD)
 	Thành phần: Hunspell (WebAssembly), Cloudflare Workers + D1 (máy chủ tùy chọn), GitHub Pages
 	Tóm tắt cho công cụ AI: https://nsfk.github.io/briefb1/llms.txt

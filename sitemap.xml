@@ -1,4 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://nsfk.github.io/briefb1/</loc><lastmod>2026-10-03</lastmod></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://nsfk.github.io/briefb1/</loc>
+    <lastmod>2026-10-03</lastmod>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nsfk.github.io/briefb1/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://nsfk.github.io/briefb1/en.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://nsfk.github.io/briefb1/de.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nsfk.github.io/briefb1/"/>
+  </url>
+  <url>
+    <loc>https://nsfk.github.io/briefb1/en.html</loc>
+    <lastmod>2026-10-03</lastmod>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nsfk.github.io/briefb1/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://nsfk.github.io/briefb1/en.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://nsfk.github.io/briefb1/de.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nsfk.github.io/briefb1/"/>
+  </url>
+  <url>
+    <loc>https://nsfk.github.io/briefb1/de.html</loc>
+    <lastmod>2026-10-03</lastmod>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://nsfk.github.io/briefb1/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://nsfk.github.io/briefb1/en.html"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://nsfk.github.io/briefb1/de.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nsfk.github.io/briefb1/"/>
+  </url>
 </urlset>

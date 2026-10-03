@@ -2,7 +2,7 @@
 
 > Ứng dụng web miễn phí giúp người Việt luyện viết thư tiếng Đức trình độ B1 (telc Deutsch B1, Goethe-Zertifikat B1, ÖSD Zertifikat B1): đồng hồ thi, chấm chính tả tiếng Đức kèm gợi ý sửa, so sánh với bài mẫu và luyện viết in vết. Giao diện tiếng Việt, chạy ngay trên trình duyệt, không cần tài khoản, không cần cài đặt.
 
-English summary: B1 Schreibtrainer is a free browser app for Vietnamese learners practising German B1 letter writing (telc, Goethe, ÖSD). It offers an exam timer, spell-check grading with Hunspell (de_DE) and correction suggestions, a word-by-word comparison with a model answer, and a tracing mode for copying model letters. The interface is in Vietnamese; no account or installation is needed.
+English summary: B1 Schreibtrainer is a free browser app for Vietnamese learners practising German B1 letter writing (telc, Goethe, ÖSD). It offers an exam timer, spell-check grading with Hunspell (de_DE) and correction suggestions, a word-by-word comparison with a model answer, and a tracing mode for copying model letters. The interface is in Vietnamese, with English and German versions; no account or installation is needed.
 
 Chức năng chính:
 
@@ -24,6 +24,8 @@ Thành phần: Hunspell 1.7.3 (MPL 1.1 / GPL 2.0 / LGPL 2.1), @farscrl/hunspell-
 ## Trang
 
 - [Trang luyện viết](https://nsfk.github.io/briefb1/): toàn bộ ứng dụng; mở trên máy tính hoặc điện thoại.
+- [English version](https://nsfk.github.io/briefb1/en.html): the same app with an English interface.
+- [Deutsche Version](https://nsfk.github.io/briefb1/de.html): dieselbe App mit deutscher Oberfläche.
 
 ## Tài liệu
 
