@@ -20,7 +20,7 @@ const pct = x => nfp.format(x * 100) + ' %';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const smooth = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
 const capFirst = s => s.charAt(0).toUpperCase() + s.slice(1);
-const joinVi = list => (list.length <= 1 ? list.join('') : list.slice(0, -1).join(', ') + ' và ' + list[list.length - 1]);
+const joinVi = list => (list.length <= 1 ? list.join('') : list.slice(0, -1).join(', ') + ' und ' + list[list.length - 1]);
 // quan-tri.html (<html data-page="admin">): the owner's console - server dashboard and the maintenance switch, nothing of
 // the learner's desk. index.html is the learner page and never shows the owner's tools.
 const ADMIN_PAGE = document.documentElement.getAttribute('data-page') === 'admin';
@@ -111,7 +111,7 @@ function reportCrash(detail) {
   lastCrash = String(detail || '').slice(0, 500);           // goes into a bug report only if the user sends one
   if (crashShown) return;
   crashShown = true;
-  toast('Ứng dụng gặp lỗi không mong muốn. Hãy tải lại trang; bản nháp vẫn được giữ trên trình duyệt này. Có thể bấm „Báo lỗi“ ở cuối trang.');
+  toast('In der App ist ein unerwarteter Fehler aufgetreten. Laden Sie die Seite neu; Ihr Entwurf bleibt in diesem Browser erhalten. Sie können unten auf der Seite auf „Fehler melden“ klicken.');
   try { track('error'); } catch (e) { /* counting is optional */ }
 }
 window.addEventListener('error', e => { if (OUR_FILES.test(e && e.filename || '')) reportCrash(`${e.message} @ ${String(e.filename).split('/').pop()}:${e.lineno}`); });
@@ -155,8 +155,8 @@ function storageFailed(e) {
     store.warned = true;
     toast(ADMIN_PAGE ? (store.blocked ? 'Trình duyệt không cho lưu dữ liệu: thiết lập trên trang quản trị chỉ giữ đến khi đóng trang.'
         : 'Bộ nhớ của trình duyệt đã đầy nên chưa lưu được. Hãy mở trang luyện viết và xóa bớt lịch sử (Cấu hình › Dữ liệu).')
-      : store.blocked ? 'Trình duyệt không cho lưu dữ liệu: bản nháp, lịch sử và cài đặt chỉ giữ đến khi đóng trang.'
-      : 'Bộ nhớ của trình duyệt đã đầy nên chưa lưu được. Hãy xóa bớt lịch sử trong tab Cấu hình.');
+      : store.blocked ? 'Der Browser erlaubt kein Speichern: Entwurf, Verlauf und Einstellungen bleiben nur erhalten, bis die Seite geschlossen wird.'
+      : 'Der Speicher des Browsers ist voll, daher konnte nichts gespeichert werden. Löschen Sie einen Teil des Verlaufs im Tab Einstellungen.');
   }, 0);
 }
 window.addEventListener('beforeunload', e => {           // last line of defence when nothing could be saved
@@ -181,15 +181,15 @@ const saveSettings = () => { const ok = store.set('settings', settings); schedul
 
 /* ===================== sample tasks (original practice prompts) ===================== */
 const SAMPLES = [
-  { id: 'geburtstag', title: 'Einladung zum Geburtstag (thân mật)',
+  { id: 'geburtstag', title: 'Einladung zum Geburtstag (informell)',
     task: 'Ihre Freundin Anna hat Sie zu ihrer Geburtstagsparty am Samstag eingeladen. Sie können aber leider nicht kommen.\n\nSchreiben Sie Anna eine E-Mail:\n– Bedanken Sie sich für die Einladung.\n– Erklären Sie, warum Sie nicht kommen können.\n– Machen Sie einen Vorschlag für ein anderes Treffen.\n– Fragen Sie, was sie sich zum Geburtstag wünscht.\n\nDenken Sie an eine passende Anrede, eine Einleitung und einen Schluss.',
     model: 'Liebe Anna,\n\nvielen Dank für deine Einladung zu deiner Geburtstagsparty am Samstag. Ich habe mich sehr darüber gefreut.\n\nLeider kann ich nicht kommen, weil ich am Wochenende arbeiten muss. Meine Kollegin ist krank, deshalb muss ich ihre Schicht übernehmen. Das tut mir wirklich leid.\n\nHast du vielleicht nächste Woche Zeit? Wir könnten zusammen in unser Lieblingscafé gehen und ein Stück Kuchen essen. Wie wäre es mit Dienstag oder Mittwoch am Abend?\n\nAußerdem möchte ich dir gern etwas schenken. Hast du einen besonderen Wunsch? Vielleicht ein Buch oder etwas für deine neue Wohnung? Schreib mir einfach.\n\nIch wünsche dir eine schöne Party und einen tollen Geburtstag!\n\nViele Grüße\nLisa' },
-  { id: 'kurs', title: 'Deutschkurs am Wochenende (trang trọng)',
+  { id: 'kurs', title: 'Deutschkurs am Wochenende (formell)',
     task: 'Sie haben im Internet eine Anzeige für einen Deutschkurs am Wochenende gelesen. Schreiben Sie an die Sprachschule:\n– Stellen Sie sich kurz vor.\n– Warum möchten Sie den Kurs besuchen?\n– Fragen Sie nach den Kosten und den Kurszeiten.\n– Fragen Sie, ob es am Ende eine Prüfung gibt.\n\nDenken Sie an eine passende Anrede, eine Einleitung und einen Schluss.',
     model: 'Sehr geehrte Damen und Herren,\n\nich habe im Internet Ihre Anzeige für einen Deutschkurs am Wochenende gelesen und interessiere mich sehr für dieses Angebot.\n\nMein Name ist Lisa Tran. Ich bin 27 Jahre alt und komme aus Vietnam. Seit einem Jahr lebe ich in Leipzig und arbeite als Krankenpflegerin.\n\nIch möchte den Kurs besuchen, weil ich im nächsten Jahr die B1-Prüfung machen möchte. Unter der Woche habe ich leider keine Zeit, deshalb passt ein Kurs am Wochenende sehr gut zu mir.\n\nKönnten Sie mir bitte mitteilen, wie viel der Kurs kostet und wann genau er stattfindet? Außerdem würde ich gern wissen, ob es am Ende des Kurses eine Prüfung gibt.\n\nIch freue mich auf Ihre Antwort.\n\nMit freundlichen Grüßen\nLisa Tran' },
-  { id: 'umzug', title: 'Ein Freund zieht um (thân mật)',
+  { id: 'umzug', title: 'Ein Freund zieht um (informell)',
     task: 'Ihr Freund Jonas zieht bald in Ihre Stadt und sucht eine Wohnung. Schreiben Sie ihm eine E-Mail:\n– Sagen Sie, dass Sie sich über den Umzug freuen.\n– Geben Sie Tipps für die Wohnungssuche.\n– Welchen Stadtteil empfehlen Sie? Warum?\n– Bieten Sie Ihre Hilfe beim Umzug an.', model: '' },
-  { id: 'beschwerde', title: 'Beschwerde über eine Bestellung (trang trọng)',
+  { id: 'beschwerde', title: 'Beschwerde über eine Bestellung (formell)',
     task: 'Sie haben online ein Fahrrad bestellt. Es ist aber beschädigt angekommen. Schreiben Sie an den Kundenservice:\n– Was haben Sie wann bestellt?\n– Beschreiben Sie das Problem.\n– Was erwarten Sie jetzt von der Firma?\n– Bis wann möchten Sie eine Antwort?', model: '' }
 ];
 const DEMO_ANSWER = 'Liebe Anna,\n\nvielen Dank fuer deine Einladung zu deiner Geburtstagsparty am Samstag. Ich habe mich sehr gefreut!\n\nLeider kann ich nicht kommen, weil ich am Wochenende arbeiten muss. meine Kollegin ist krank und ich muss ihre Schicht übernehmen. Entschuldiegung, das ich nicht dabei sein kann. Ich bin wirklich traurig.\n\nHast du nächste woche Zeit? Wir könnten zusammen ins Café gehen und Kuchen essen. Vieleicht am Dienstag oder am Mittwoch nach der Arbeit? Ich lade dich natürlich ein.\n\nWas wünschst du dir zum Geburtstag? Ich möchte dir gern etwas schenken, aber ich weiß nicht, was dir gefällt. Vielleicht ein Buch oder eine Pflanze für deine neue Wohnung?\n\nIch wünsche dir eine schöne Party und viel Spaß mit deinen Freunden!\n\nViele Grüsse\nLisa';
@@ -215,7 +215,7 @@ function loadScript(src) {
     const s = document.createElement('script');
     s.src = src; s.async = true;
     s.onload = () => resolve();
-    s.onerror = () => reject(new Error('Không tải được ' + src));
+    s.onerror = () => reject(new Error('Konnte nicht geladen werden: ' + src));
     (document.head || document.documentElement).appendChild(s);
   });
 }
@@ -225,9 +225,9 @@ function setSpellStatus(kind, text, title) {
   E.spell.title = title || '';
 }
 const ON_WEB = /^https?:$/.test(location.protocol);
-const SPELL_FAIL_HINT = ON_WEB ? 'Hãy kiểm tra kết nối mạng rồi tải lại trang (bản nháp vẫn được giữ).'
-  : 'Bản trên máy: kiểm tra thư mục lib (hunspell.js, dict-de.js) đặt cạnh index.html, rồi tải lại trang.';
-const SPELL_SLOW_HINT = 'Mạng đang chậm: từ điển (khoảng 0,8 MB) vẫn đang tải và sẽ tự được dùng khi tải xong. Có thể tiếp tục viết bài.';
+const SPELL_FAIL_HINT = ON_WEB ? 'Prüfen Sie die Internetverbindung und laden Sie die Seite neu (Ihr Entwurf bleibt erhalten).'
+  : 'Lokale Kopie: Prüfen Sie, ob der Ordner lib (hunspell.js, dict-de.js) neben index.html liegt, und laden Sie die Seite neu.';
+const SPELL_SLOW_HINT = 'Das Netz ist langsam: Das Wörterbuch (etwa 0,8 MB) wird noch geladen und automatisch verwendet, sobald es da ist. Sie können weiterschreiben.';
 // The dictionary (~3 MB) loads when the page is idle, so the first seconds of typing stay smooth; anything that needs it
 // earlier (grading, re-grading) calls ensureSpell(), which starts the load at once.
 function ensureSpell() { return Spell.promise || initSpell(); }
@@ -238,7 +238,7 @@ function initSpell() {
   const watchdog = setTimeout(() => {
     if (Spell.ready || Spell.failed) return;
     Spell.slow = true;
-    setSpellStatus('warn', 'Từ điển đang tải chậm…', SPELL_SLOW_HINT);
+    setSpellStatus('warn', 'Das Wörterbuch lädt langsam…', SPELL_SLOW_HINT);
     renderAbout();
   }, 30000);
   const t0 = performance.now();
@@ -266,11 +266,11 @@ function initSpell() {
       loaded = true;
     } catch (err) {
       Spell.failed = true; Spell.slow = false;
-      setSpellStatus('bad', 'Không tải được từ điển', String(err && err.message || err) + '. ' + SPELL_FAIL_HINT);
+      setSpellStatus('bad', 'Wörterbuch konnte nicht geladen werden', String(err && err.message || err) + '. ' + SPELL_FAIL_HINT);
     }
     clearTimeout(watchdog);
     if (loaded) {
-      setSpellStatus('ok', 'Chính tả: Hunspell · de_DE', 'Hunspell ' + Spell.version + ' · từ điển igerman98 (de_DE) · chạy offline trong trình duyệt');
+      setSpellStatus('ok', 'Rechtschreibung: Hunspell · de_DE', 'Hunspell ' + Spell.version + ' · Wörterbuch igerman98 (de_DE) · läuft offline im Browser');
       applySharedWords();                                   // approved words of the shared dictionary, then the personal ones
       syncPersonalWords();
       if (lastResult && !lastResult.spellReady) regrade(!lastResult.review);   // graded / reopened while the dictionary was loading
@@ -348,7 +348,7 @@ const UML_KEYS = ['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü', '„', '“'];
 $$('[data-uml]').forEach(box => {
   const inFloat = !!box.closest('#umlFloat');
   // The floating keys are pointer-only (tabindex -1): tabbing onto them would move focus out of the field they serve.
-  box.innerHTML = UML_KEYS.map(ch => `<button type="button" class="uml" data-ch="${ch}" title="Chèn ${ch}" aria-label="Chèn ${ch}"${inFloat ? ' tabindex="-1"' : ''}>${ch}</button>`).join('');
+  box.innerHTML = UML_KEYS.map(ch => `<button type="button" class="uml" data-ch="${ch}" title="${ch} einfügen" aria-label="${ch} einfügen"${inFloat ? ' tabindex="-1"' : ''}>${ch}</button>`).join('');
 });
 let stickTop = 0;
 function updateSticky() {
@@ -385,7 +385,7 @@ function applyFocus() {
   const on = !!settings.focus;
   E.desk.classList.toggle('focus', on);
   E.btnFocus.setAttribute('aria-pressed', String(on));
-  const label = on ? 'Thu nhỏ ô Bài viết, hiện lại Đề bài và Bài mẫu' : 'Mở rộng ô Bài viết, ẩn Đề bài và Bài mẫu';
+  const label = on ? 'Schreibfeld verkleinern, Aufgabe und Musterbrief wieder zeigen' : 'Schreibfeld vergrößern, Aufgabe und Musterbrief ausblenden';
   E.btnFocus.title = label;
   E.btnFocus.setAttribute('aria-label', label);
   $('use', E.btnFocus).setAttribute('href', on ? '#i-collapse' : '#i-expand');
@@ -522,7 +522,7 @@ function insertAtCaret(ta, str) {
 
 /* ===================== timer ===================== */
 const T = { state: 'idle', total: 1800, endAt: 0, remaining: 1800, warned5: false, warned1: false, unlocked: false, maintPaused: false, graded: false };
-const STATE_LABEL = { idle: 'Sẵn sàng', running: 'Đang làm bài', paused: 'Tạm dừng', done: 'Hết giờ', stopped: 'Đã nộp bài' };
+const STATE_LABEL = { idle: 'Bereit', running: 'Läuft', paused: 'Angehalten', done: 'Zeit abgelaufen', stopped: 'Abgegeben' };
 const STATE_KIND = { idle: '', running: 'info', paused: 'warn', done: 'bad', stopped: 'ok' };
 const active = () => T.state === 'running' || T.state === 'paused';
 let lastShownSec = -1, timerRun = 0;
@@ -555,8 +555,8 @@ function applyTimerUI() {
   const st = T.state;
   E.clockState.textContent = STATE_LABEL[st];
   E.clockState.className = 'pill ' + STATE_KIND[st];
-  E.clockTotal.textContent = 'Tổng: ' + fmt(T.total);
-  E.btnStart.querySelector('span').textContent = { idle: 'Bắt đầu', running: 'Tạm dừng', paused: 'Tiếp tục', done: 'Bắt đầu lại', stopped: 'Bắt đầu lại' }[st];
+  E.clockTotal.textContent = 'Gesamt: ' + fmt(T.total);
+  E.btnStart.querySelector('span').textContent = { idle: 'Starten', running: 'Angehalten', paused: 'Fortsetzen', done: 'Neu starten', stopped: 'Neu starten' }[st];
   E.icoPlay.hidden = st === 'running';
   E.icoPause.hidden = st !== 'running';
   E.btnStart.classList.toggle('btn-primary', st !== 'running');
@@ -565,7 +565,7 @@ function applyTimerUI() {
   E.timeInput.disabled = !editable;
   const want = parseTime(E.timeInput.value);
   $$('.chip[data-time]').forEach(c => { c.disabled = !editable; c.setAttribute('aria-pressed', String(parseTime(c.dataset.time) === want)); });
-  if (!grading) setLabel(E.btnGrade, active() ? 'Nộp bài và chấm điểm' : 'Chấm điểm');
+  if (!grading) setLabel(E.btnGrade, active() ? 'Abgeben und bewerten' : 'Bewerten');
   lastShownSec = -1;                                      // a state change always refreshes the tab title
   renderClock();
   applyExam();
@@ -575,7 +575,7 @@ function readTimeInput(showError) {
   const ok = validSec(sec);
   if (ok) E.timeErr.hidden = true;
   else if (showError) {
-    E.timeErr.textContent = 'Thời gian không hợp lệ. Nhập số phút (ví dụ 30) hoặc phút:giây (ví dụ 0:20), từ 5 giây đến 600 phút.';
+    E.timeErr.textContent = 'Ungültige Zeit. Geben Sie Minuten (zum Beispiel 30) oder Min:Sek (zum Beispiel 0:20) ein, von 5 Sekunden bis 600 Minuten.';
     E.timeErr.hidden = false;
   }
   return ok ? sec : 0;
@@ -627,8 +627,8 @@ function tick() {
   if (T.state !== 'running') return;
   const r = remaining();
   if (r <= 0) { finishTimer(false); return; }
-  if (!T.warned5 && r <= 300) { T.warned5 = true; persistTimer(); toast('Còn 5 phút.'); }
-  if (!T.warned1 && r <= 60) { T.warned1 = true; persistTimer(); toast('Còn 1 phút — hãy viết lời chào kết.'); }
+  if (!T.warned5 && r <= 300) { T.warned5 = true; persistTimer(); toast('Noch 5 Minuten.'); }
+  if (!T.warned1 && r <= 60) { T.warned1 = true; persistTimer(); toast('Noch 1 Minute — schreiben Sie jetzt den Schlussgruß.'); }
   renderClock();
 }
 let tickWorker = null, tickInterval = 0;
@@ -653,7 +653,7 @@ let flashTimer = 0;
 function flashTitle() {
   stopFlash();
   let on = false;
-  flashTimer = setInterval(() => { document.title = (on = !on) ? 'HẾT GIỜ · ' + SHORT_TITLE : SHORT_TITLE; }, 900);
+  flashTimer = setInterval(() => { document.title = (on = !on) ? 'ZEIT ABGELAUFEN · ' + SHORT_TITLE : SHORT_TITLE; }, 900);
 }
 function stopFlash() {
   if (flashTimer) { clearInterval(flashTimer); flashTimer = 0; }
@@ -665,7 +665,7 @@ let actx = null, scheduled = [], endAudioAt = 0, audioWarned = false;
 function warnAudio() {
   if (audioWarned) return;
   audioWarned = true;
-  toast('Trình duyệt này không phát được âm thanh báo giờ. Hãy theo dõi đồng hồ trên màn hình.');
+  toast('Dieser Browser kann die Zeitsignale nicht abspielen. Behalten Sie die Uhr auf dem Bildschirm im Blick.');
 }
 function audio() {
   if (!settings.sound) return null;
@@ -742,9 +742,9 @@ function applyExam() {
   const showModel = settings.showModel && !covered;
   E.model.hidden = !showModel;
   E.modelCover.hidden = showModel;
-  E.modelCoverText.textContent = covered ? 'Trong chế độ thi, bài mẫu được che cho đến khi bạn nộp bài hoặc hết giờ.' : 'Bấm „Hiện“ để xem bài mẫu.';
+  E.modelCoverText.textContent = covered ? 'Im Prüfungsmodus bleibt der Musterbrief verdeckt, bis Sie abgeben oder die Zeit abgelaufen ist.' : 'Klicken Sie auf „Zeigen“, um den Musterbrief zu sehen.';
   E.btnModelToggle.disabled = covered;
-  E.btnModelToggle.textContent = settings.showModel ? 'Ẩn' : 'Hiện';
+  E.btnModelToggle.textContent = settings.showModel ? 'Ausblenden' : 'Zeigen';
   E.btnModelToggle.setAttribute('aria-pressed', String(settings.showModel));
   $('[data-open="model"]').disabled = covered;
   E.sampleSel.disabled = covered;
@@ -790,7 +790,7 @@ E.backdrop.addEventListener('click', e => {
   if (e.target === E.backdrop && !E.modal.classList.contains('alarm') && performance.now() - modalOpenedAt > 500) closeModal(null);
 });
 function confirmBox(title, text, okLabel, danger) {
-  return openModal({ title, html: `<p>${esc(text)}</p>`, buttons: [{ label: 'Hủy', value: false }, { label: okLabel, value: true, primary: !danger, danger }] }).then(v => v === true);
+  return openModal({ title, html: `<p>${esc(text)}</p>`, buttons: [{ label: 'Abbrechen', value: false }, { label: okLabel, value: true, primary: !danger, danger }] }).then(v => v === true);
 }
 let toastTimer = 0;
 function toast(msg) {
@@ -819,9 +819,9 @@ function showTimeUp() {
   const w = A.countWords(traceOn() ? E.traceInput.value : E.answer.value);
   const locked = settings.exam && !T.unlocked;
   openModal({
-    kind: 'alarm', title: 'Hết giờ!', sub: 'Die Zeit ist um.',
-    html: `<p>Bạn đã viết <b>${w}</b> từ trong ${esc(fmt(T.total))}.</p>` + (locked ? '<p class="muted small">Bài viết đã được khóa như trong phòng thi. Bạn vẫn có thể mở khóa để viết tiếp.</p>' : ''),
-    buttons: [{ label: 'Để sau', value: 'later' }, { label: traceOn() ? 'Xem kết quả in vết' : 'Chấm điểm ngay', value: 'grade', primary: true }]
+    kind: 'alarm', title: 'Die Zeit ist abgelaufen!', sub: 'Die Zeit ist um.',
+    html: `<p>Sie haben <b>${w}</b> Wörter in ${esc(fmt(T.total))} geschrieben.</p>` + (locked ? '<p class="muted small">Ihr Text wurde gesperrt, wie im Prüfungsraum. Sie können ihn entsperren und weiterschreiben.</p>' : ''),
+    buttons: [{ label: 'Später', value: 'later' }, { label: traceOn() ? 'Ergebnis des Nachschreibens ansehen' : 'Jetzt bewerten', value: 'grade', primary: true }]
   }).then(v => { stopFlash(); if (v === 'grade') { if (traceOn()) finishTrace(false); else grade(); } });
 }
 
@@ -909,7 +909,7 @@ function applyMode() {
   E.traceStats.hidden = !on;
   for (const b of [E.btnGrade, E.btnDemo, E.btnNew]) b.hidden = on;
   E.btnTraceFinish.hidden = E.btnTraceRestart.hidden = !on;
-  E.gradeHint.textContent = on ? 'Ctrl + Enter để kết thúc và lưu' : 'Ctrl + Enter để chấm';
+  E.gradeHint.textContent = on ? 'Strg + Enter zum Beenden und Speichern' : 'Strg + Enter zum Bewerten';
   if (on) prepareTrace(); else E.traceDone.hidden = true;
   applyExam();
   updateCounters();
@@ -954,14 +954,14 @@ function buildTraceView() {
   para.appendChild(Trace.tail);
   view.appendChild(frag);
 }
-const TIP = { case: 'Sai viết hoa / viết thường', punct: 'Sai dấu câu', uml: /*vi*/'Sai umlaut / ß', letter: 'Sai chữ' };
+const TIP = { case: 'Falsche Groß- / Kleinschreibung', punct: 'Falsches Satzzeichen', uml: /*vi*/'Falscher Umlaut / ß', letter: 'Falscher Buchstabe' };
 function paintWord(el, r, caret) {
   let html = '', run = null;
   const flush = () => { if (run) { html += run.cls ? `<span class="${run.cls}"${run.tip}>${esc(run.text)}</span>` : esc(run.text); run = null; } };
   r.items.forEach((it, i) => {
     if (i === caret) { flush(); html += '<span class="tcaret"></span>'; }
     const cls = it.cls === 'ghost' ? '' : 't-' + it.cls;
-    const tip = it.typed != null ? ` title="${esc(TIP[it.cls] || /*vi*/'Sai')}: bạn gõ „${esc(it.typed)}“"` : it.cls === 'miss' ? ' title="Thiếu chữ này"' : it.cls === 'extra' ? ' title="Chữ thừa"' : '';
+    const tip = it.typed != null ? ` title="${esc(TIP[it.cls] || /*vi*/'Falsch')}: Sie haben „${esc(it.typed)}“ getippt"` : it.cls === 'miss' ? ' title="Dieser Buchstabe fehlt"' : it.cls === 'extra' ? ' title="Überzähliger Buchstabe"' : '';
     if (run && run.cls === cls && !tip && !run.tip) run.text += it.ch;
     else { flush(); run = { cls, tip, text: it.ch }; }
   });
@@ -983,7 +983,7 @@ function renderTrace() {
     paintWord(node.el, r, caret);
   }
   let tail = '';
-  res.words.slice(pw).forEach(r => { tail += ' <span class="t-extra" title="Thừa so với bài mẫu">' + esc(r.items.map(it => it.ch).join('')) + '</span>'; });
+  res.words.slice(pw).forEach(r => { tail += ' <span class="t-extra" title="Überzählig gegenüber dem Musterbrief">' + esc(r.items.map(it => it.ch).join('')) + '</span>'; });
   if (res.current >= pw) tail += (open ? '' : ' ') + '<span class="tcaret"></span>';
   if (Trace.tail.innerHTML !== tail) Trace.tail.innerHTML = tail;
   scheduleTraceLayout();
@@ -1001,15 +1001,15 @@ function scheduleTraceLayout() {
     if (document.activeElement === E.traceInput) keepTraceCaretVisible(caretEl);
   });
 }
-const CAT_LABEL = [['case', 'Viết hoa'], ['punct', 'Dấu câu'], ['uml', 'Umlaut/ß'], ['letter', 'Sai chữ'], ['missing', 'Thiếu'], ['extra', 'Thừa']];
+const CAT_LABEL = [['case', 'Großschreibung'], ['punct', 'Satzzeichen'], ['uml', 'Umlaut/ß'], ['letter', 'Falscher Buchstabe'], ['missing', 'Fehlt'], ['extra', 'Überzählig']];
 const catPills = cats => CAT_LABEL.map(([k, label]) => `<span class="tpill ${cats[k] ? 'tp-' + k : 'tp-zero'}">${label} <b>${cats[k]}</b></span>`).join('');
 const pctInt = x => Math.floor(x * 100 + 1e-9) + ' %';
 function traceWpm(res) { return Trace.activeMs > 5000 ? Math.round(res.doneWords / (Trace.activeMs / 60000)) : null; }
 let lastStats = '';
 function renderTraceStats(res) {
   const wpm = traceWpm(res);
-  const html = `<span><b>${res.doneWords}</b>/${res.totalWords} từ</span><span>Chính xác <b>${pctInt(res.accuracy)}</b></span>${catPills(res.cats)}` +
-    (wpm != null ? `<span class="muted">${wpm} từ/phút</span>` : '');
+  const html = `<span><b>${res.doneWords}</b>/${res.totalWords} Wörter</span><span>Genauigkeit <b>${pctInt(res.accuracy)}</b></span>${catPills(res.cats)}` +
+    (wpm != null ? `<span class="muted">${wpm} Wörter/Min</span>` : '');
   if (html !== lastStats) { lastStats = html; E.traceStats.innerHTML = html; }
 }
 function keepTraceCaretVisible(c) {
@@ -1039,7 +1039,7 @@ E.traceInput.addEventListener('keydown', e => {            // the caret always s
 });
 const traceKeepEnd = () => { const ta = E.traceInput, n = ta.value.length; if (ta.selectionStart !== n || ta.selectionEnd !== n) ta.setSelectionRange(n, n); };
 document.addEventListener('selectionchange', () => { if (document.activeElement === E.traceInput) traceKeepEnd(); });
-E.traceInput.addEventListener('paste', e => { e.preventDefault(); toast('Chế độ in vết không cho dán chữ. Hãy gõ theo bài mẫu.'); });
+E.traceInput.addEventListener('paste', e => { e.preventDefault(); toast('Beim Nachschreiben kann kein Text eingefügt werden. Tippen Sie den Musterbrief nach.'); });
 E.traceInput.addEventListener('drop', e => e.preventDefault());
 E.traceInput.addEventListener('focus', () => { E.traceView.classList.add('focused'); traceKeepEnd(); });
 E.traceInput.addEventListener('blur', () => E.traceView.classList.remove('focused'));
@@ -1049,18 +1049,13 @@ function traceSummaryHtml(res, savedNote) {
   const tw = TR.splitTyped(E.traceInput.value).words, pw = Trace.prep.words, wrong = [];
   for (let k = 0; k < Math.min(tw.length, pw.length) && wrong.length < 60; k++) if (res.words[k].errors) wrong.push([tw[k], pw[k].w]);
   const kind = res.accuracy >= 0.95 ? 'ok' : res.accuracy >= 0.85 ? 'warn' : 'bad', wpm = traceWpm(res);
-  return `<h3>Kết quả in vết</h3>
-    <div class="row"><span class="pill ${kind}">Chính xác ${pctInt(res.accuracy)}</span><span class="small">${res.doneWords}/${res.totalWords} từ</span>
-      <span class="small muted">Thời gian gõ ${esc(fmt(Trace.activeMs / 1000))}</span>${wpm != null ? `<span class="small muted">${wpm} từ/phút</span>` : ''}</div>
-    <div class="row">${catPills(res.cats)}</div>
-    ${wrong.length ? `<div><div class="lbl" style="margin-bottom:6px">Các từ gõ sai: bạn gõ → bài mẫu</div><div class="wordfix" lang="de">${wrong.map(([t, m]) => `<span><s>${esc(t)}</s> → <b>${esc(m)}</b></span>`).join('')}</div></div>`
-      : '<p class="small" style="margin:0">Không có từ nào gõ sai. Rất tốt!</p>'}
-    <p class="muted small" style="margin:0">${esc(savedNote)}</p>`;
+  return `<h3>Ergebnis des Nachschreibens</h3>\n    <div class="row"><span class="pill ${kind}">Genauigkeit ${pctInt(res.accuracy)}</span><span class="small">${res.doneWords}/${res.totalWords} Wörter</span>\n      <span class="small muted">Tippzeit ${esc(fmt(Trace.activeMs / 1000))}</span>${wpm != null ? `<span class="small muted">${wpm} Wörter/Min</span>` : ''}</div>\n    <div class="row">${catPills(res.cats)}</div>\n    ${wrong.length ? `<div><div class="lbl" style="margin-bottom:6px">Falsch getippte Wörter: Ihre Eingabe → Musterbrief</div><div class="wordfix" lang="de">${wrong.map(([t, m]) => `<span><s>${esc(t)}</s> → <b>${esc(m)}</b></span>`).join('')}</div></div>`
+      : '<p class="small" style="margin:0">Keine falsch getippten Wörter. Sehr gut!</p>'}\n    <p class="muted small" style="margin:0">${esc(savedNote)}</p>`;
 }
 function finishTrace(auto) {
   const res = Trace.res;
   if (!traceOn() || !Trace.prep) return;
-  if (!res || !res.typedWords) { toast('Chưa gõ chữ nào theo bài mẫu.'); E.traceInput.focus(); return; }
+  if (!res || !res.typedWords) { toast('Sie haben noch nichts vom Musterbrief getippt.'); E.traceInput.focus(); return; }
   const hist = loadHistory();
   const entry = { id: Trace.entryId || Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t: Trace.started || Date.now(), mode: 'trace',
     task: firstLine(E.task.value), taskFull: E.task.value, modelFull: E.model.value, text: E.traceInput.value, words: res.typedWords,
@@ -1070,10 +1065,10 @@ function finishTrace(auto) {
   putHistory(hist, entry);
   Trace.saved = true;
   saveTrace(); saveTrace.flush();
-  E.traceDone.innerHTML = traceSummaryHtml(res, 'Đã lưu vào Lịch sử.');
+  E.traceDone.innerHTML = traceSummaryHtml(res, 'Im Verlauf gespeichert.');
   E.traceDone.hidden = false;
   if (!auto) E.traceDone.scrollIntoView({ behavior: smooth(), block: 'nearest' });
-  toast(auto ? 'Bạn đã gõ hết bài mẫu. Kết quả đã được lưu vào Lịch sử.' : 'Đã lưu kết quả in vết vào Lịch sử.');
+  toast(auto ? 'Sie haben den ganzen Musterbrief getippt. Das Ergebnis wurde im Verlauf gespeichert.' : 'Das Ergebnis des Nachschreibens wurde im Verlauf gespeichert.');
 }
 function resetTraceSession() {
   E.traceInput.value = '';
@@ -1085,16 +1080,16 @@ function resetTraceSession() {
 E.btnTraceFinish.addEventListener('click', () => finishTrace(false));
 E.btnTraceRestart.addEventListener('click', async () => {
   if (E.traceInput.value.trim() && !Trace.saved &&
-      !(await confirmBox('Gõ lại từ đầu?', 'Phần đã gõ (chưa lưu kết quả) sẽ bị xóa.', 'Gõ lại', true))) return;
+      !(await confirmBox('Von vorn tippen?', 'Was Sie getippt haben (das Ergebnis ist nicht gespeichert), wird gelöscht.', 'Von vorn', true))) return;
   resetTraceSession();
   if (!E.traceInput.disabled) E.traceInput.focus({ preventScroll: true });
 });
 async function reopenTrace(h) {
   const lose = [];
-  if (h.taskFull && E.task.value.trim() && E.task.value !== h.taskFull) lose.push('đề bài');
-  if (typeof h.modelFull === 'string' && E.model.value.trim() && E.model.value !== h.modelFull) lose.push('bài mẫu');
-  if (E.traceInput.value.trim() && !Trace.saved && E.traceInput.value !== h.text) lose.push('phần đang gõ in vết');
-  if (lose.length && !(await confirmBox('Mở lại bài in vết?', `${capFirst(joinVi(lose))} trên trang sẽ được thay bằng nội dung của lần luyện ngày ${dateStr(h.t)}.`, 'Mở lại'))) return;
+  if (h.taskFull && E.task.value.trim() && E.task.value !== h.taskFull) lose.push('die Aufgabe');
+  if (typeof h.modelFull === 'string' && E.model.value.trim() && E.model.value !== h.modelFull) lose.push('der Musterbrief');
+  if (E.traceInput.value.trim() && !Trace.saved && E.traceInput.value !== h.text) lose.push('der nachgeschriebene Text');
+  if (lose.length && !(await confirmBox('Nachschreib-Übung wieder öffnen?', `Folgendes auf der Seite wird durch den Inhalt der Übung vom ${dateStr(h.t)} ersetzt: ${capFirst(joinVi(lose))}.`, 'Wieder öffnen'))) return;
   if (h.taskFull) E.task.value = h.taskFull;
   if (typeof h.modelFull === 'string') E.model.value = h.modelFull;
   E.task.dispatchEvent(new Event('input')); E.model.dispatchEvent(new Event('input'));
@@ -1105,7 +1100,7 @@ async function reopenTrace(h) {
   applyMode();
   saveTrace();
   selectView('practice');
-  if (Trace.res) { E.traceDone.innerHTML = traceSummaryHtml(Trace.res, `Lần luyện ngày ${dateStr(h.t)}. Gõ tiếp để luyện thêm; bấm „Kết thúc và lưu kết quả“ để cập nhật.`); E.traceDone.hidden = false; }
+  if (Trace.res) { E.traceDone.innerHTML = traceSummaryHtml(Trace.res, `Übung vom ${dateStr(h.t)}. Tippen Sie weiter, um mehr zu üben; klicken Sie auf „Beenden und Ergebnis speichern“, um das Ergebnis zu aktualisieren.`); E.traceDone.hidden = false; }
   E.traceBox.scrollIntoView({ behavior: smooth(), block: 'start' });
 }
 
@@ -1123,7 +1118,7 @@ async function readText(file) {
 async function readDocx(file) {
   const u8 = new Uint8Array(await file.arrayBuffer());
   const dv = new DataView(u8.buffer);
-  const broken = () => new ImportError('File .docx bị hỏng hoặc không phải file Word. Hãy mở file trong Word, lưu lại rồi thử lại, hoặc sao chép nội dung.');
+  const broken = () => new ImportError('Die .docx-Datei ist beschädigt oder keine Word-Datei. Öffnen Sie sie in Word, speichern Sie sie erneut und versuchen Sie es noch einmal, oder kopieren Sie den Inhalt.');
   let eocd = -1;
   for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
   if (eocd < 0) throw broken();
@@ -1137,7 +1132,7 @@ async function readDocx(file) {
     if (dec.decode(u8.subarray(p + 46, p + 46 + nlen)) === 'word/document.xml') { entry = { method, csize, off }; break; }
     p += 46 + nlen + xlen + clen;
   }
-  if (!entry) throw new ImportError('Không tìm thấy nội dung văn bản trong file .docx.');
+  if (!entry) throw new ImportError('In der .docx-Datei wurde kein Text gefunden.');
   if (entry.off + 30 > u8.length) throw broken();
   const start = entry.off + 30 + dv.getUint16(entry.off + 26, true) + dv.getUint16(entry.off + 28, true);
   if (start + entry.csize > u8.length) throw broken();
@@ -1149,7 +1144,7 @@ async function readDocx(file) {
       const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
       xmlBytes = new Uint8Array(await new Response(stream).arrayBuffer());
     } catch (e) { throw broken(); }                       // corrupt deflate data (the browser reports it as a network error)
-  } else throw new ImportError('Trình duyệt này không giải nén được file .docx. Hãy mở file trong Word và sao chép nội dung.');
+  } else throw new ImportError('Dieser Browser kann .docx-Dateien nicht entpacken. Öffnen Sie die Datei in Word und kopieren Sie den Inhalt.');
   const xml = new DOMParser().parseFromString(dec.decode(xmlBytes), 'application/xml');
   if (xml.getElementsByTagName('parsererror').length) throw broken();
   const NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
@@ -1177,19 +1172,19 @@ $$('[data-open]').forEach(b => b.addEventListener('click', async () => {
 async function importFile(file, target) {
   const name = file.name || '';
   if (!/\.(txt|md|docx)$/i.test(name) && !/^text\//.test(file.type || '')) {
-    toast(/\.doc$/i.test(name) ? 'File .doc (Word đời cũ) chưa đọc được. Hãy lưu lại thành .docx hoặc .txt.' : 'Chỉ mở được file .txt, .md hoặc .docx.');
+    toast(/\.doc$/i.test(name) ? '.doc-Dateien (altes Word-Format) können noch nicht gelesen werden. Speichern Sie die Datei als .docx oder .txt.' : 'Es können nur .txt-, .md- oder .docx-Dateien geöffnet werden.');
     return;
   }
   try {
     const raw = /\.docx$/i.test(name) ? await readDocx(file) : await readText(file);
     const text = cleanImported(raw);
-    if (!text) { toast('File không có nội dung văn bản.'); return; }
+    if (!text) { toast('Die Datei enthält keinen Text.'); return; }
     target.value = text;
     target.dispatchEvent(new Event('input', { bubbles: true }));
-    if (target === E.model && E.model.hidden) toast(`Đã nhập bài mẫu (${A.countWords(text)} từ). Bài mẫu đang ẩn.`);
-    else toast(`Đã nhập „${name}“ (${A.countWords(text)} từ).`);
+    if (target === E.model && E.model.hidden) toast(`Musterbrief importiert (${A.countWords(text)} Wörter). Der Musterbrief ist ausgeblendet.`);
+    else toast(`„${name}“ importiert (${A.countWords(text)} Wörter).`);
   } catch (err) {
-    toast(err instanceof ImportError ? err.message : `Không đọc được „${name}“: file có thể bị hỏng. Hãy mở bằng Word hoặc Notepad, lưu lại rồi thử lại, hoặc sao chép nội dung.`);
+    toast(err instanceof ImportError ? err.message : `„${name}“ konnte nicht gelesen werden: Die Datei ist möglicherweise beschädigt. Öffnen Sie sie in Word oder im Editor, speichern Sie sie erneut und versuchen Sie es noch einmal, oder kopieren Sie den Inhalt.`);
   }
 }
 [E.task, E.model].forEach(ta => {                         // drag and drop: no system dialog at all
@@ -1215,24 +1210,24 @@ function runAnalysis(text, task, model, k = settings.k, strict = false) {
   if (Spell.engineErrors - before > 2) {                  // the engine itself is failing, not one odd word: no score
     Spell.broken = true;
     res.spellReady = false;
-    setSpellStatus('bad', 'Bộ kiểm tra chính tả gặp lỗi', 'Hãy tải lại trang rồi chấm lại.');
+    setSpellStatus('bad', 'Bei der Rechtschreibprüfung ist ein Fehler aufgetreten', 'Laden Sie die Seite neu und bewerten Sie erneut.');
   }
   return res;
 }
 function spellMissingNote() {
-  if (Spell.broken) return 'Bộ kiểm tra chính tả gặp lỗi khi chấm, nên chưa có điểm. Hãy tải lại trang rồi chấm lại (bản nháp vẫn được giữ).';
-  if (Spell.failed) return 'Không tải được từ điển, nên chưa kiểm tra chính tả và chưa có điểm. ' + SPELL_FAIL_HINT;
-  if (Spell.slow) return 'Mạng đang chậm, từ điển vẫn đang tải, nên chưa kiểm tra chính tả. Kết quả sẽ tự cập nhật khi tải xong.';
-  return 'Từ điển đang tải, nên chưa kiểm tra chính tả. Kết quả sẽ tự cập nhật khi tải xong.';
+  if (Spell.broken) return 'Bei der Rechtschreibprüfung ist während der Bewertung ein Fehler aufgetreten, daher gibt es noch keine Punktzahl. Laden Sie die Seite neu und bewerten Sie erneut (Ihr Entwurf bleibt erhalten).';
+  if (Spell.failed) return 'Das Wörterbuch konnte nicht geladen werden, daher wurde die Rechtschreibung nicht geprüft und es gibt keine Punktzahl. ' + SPELL_FAIL_HINT;
+  if (Spell.slow) return 'Das Netz ist langsam und das Wörterbuch wird noch geladen, daher wurde die Rechtschreibung noch nicht geprüft. Das Ergebnis aktualisiert sich von selbst, sobald das Laden fertig ist.';
+  return 'Das Wörterbuch wird geladen, daher wurde die Rechtschreibung noch nicht geprüft. Das Ergebnis aktualisiert sich von selbst, sobald das Laden fertig ist.';
 }
 async function grade() {
   if (grading) return;
   if (traceOn()) { finishTrace(false); return; }
   closePop();
   if (!E.backdrop.hidden) closeModal(null);
-  if (!A.countWords(E.answer.value)) { toast('Bài viết đang trống. Hãy viết bài trước khi chấm.'); E.answer.focus(); return; }
+  if (!A.countWords(E.answer.value)) { toast('Ihr Text ist leer. Schreiben Sie Ihren Text vor dem Bewerten.'); E.answer.focus(); return; }
   if (active()) {
-    const ok = await confirmBox('Nộp bài và chấm điểm?', `Đồng hồ sẽ dừng ở ${fmt(remaining())}. Thời gian đã dùng được ghi vào kết quả.`, 'Nộp bài');
+    const ok = await confirmBox('Abgeben und bewerten?', `Die Uhr bleibt bei ${fmt(remaining())} stehen. Die verbrauchte Zeit wird im Ergebnis festgehalten.`, 'Abgeben');
     if (!ok || !active()) return;
     stopTimer();
   }
@@ -1242,12 +1237,12 @@ async function grade() {
   const handIn = (T.state === 'done' || T.state === 'stopped') && !T.graded ? timeUsed() : null;
   grading = true;
   E.btnGrade.disabled = true;
-  setLabel(E.btnGrade, Spell.ready ? 'Đang chấm…' : 'Đang tải từ điển…');
+  setLabel(E.btnGrade, Spell.ready ? 'Wird bewertet…' : 'Wörterbuch wird geladen…');
   try {
     if (!Spell.ready && !Spell.failed && !Spell.slow) await Promise.race([ensureSpell(), sleep(15000)]);
     await sleep(20);                                      // let the button repaint before the work
     const text = E.answer.value;                          // the sheet as it is now (typing may continue while the dictionary loads)
-    if (!A.countWords(text)) { toast('Bài viết đang trống. Hãy viết bài trước khi chấm.'); return; }
+    if (!A.countWords(text)) { toast('Ihr Text ist leer. Schreiben Sie Ihren Text vor dem Bewerten.'); return; }
     const ta = performance.now();
     const res = runAnalysis(text, E.task.value, E.model.value);
     track('grade', performance.now() - ta);
@@ -1260,7 +1255,7 @@ async function grade() {
     saveAttempt(res, true);
     showResult(res, true);
   } catch (err) {
-    toast('Không chấm được bài: ' + (err && err.message || err) + '. Hãy tải lại trang rồi thử lại (bản nháp vẫn được giữ).');
+    toast('Der Text konnte nicht bewertet werden: ' + (err && err.message || err) + '. Laden Sie die Seite neu und versuchen Sie es noch einmal (Ihr Entwurf bleibt erhalten).');
   } finally {
     grading = false;
     E.btnGrade.disabled = false;
@@ -1288,18 +1283,18 @@ function regrade(persist = true) {
     updateStale();
     return true;
   } catch (err) {
-    toast('Không chấm lại được: ' + (err && err.message || err) + '. Hãy tải lại trang.');
+    toast('Erneute Bewertung nicht möglich: ' + (err && err.message || err) + '. Laden Sie die Seite neu.');
     return false;
   }
 }
 function ratingOf(score) {
-  if (score >= 90) return ['Rất tốt', 'ok', 'good'];
-  if (score >= 75) return ['Tốt', 'ok', 'good'];
-  if (score >= 50) return ['Trung bình', 'warn', 'mid'];
-  return ['Cần luyện thêm', 'bad', 'low'];
+  if (score >= 90) return ['Sehr gut', 'ok', 'good'];
+  if (score >= 75) return ['Gut', 'ok', 'good'];
+  if (score >= 50) return ['Mittel', 'warn', 'mid'];
+  return ['Mehr üben', 'bad', 'low'];
 }
 function chk(ok, yes, no) { return `<span class="pill ${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✗'} ${esc(ok ? yes : no)}</span>`; }
-const TYPE_LABEL = { R: 'Chính tả', G: 'Viết hoa đầu câu' };
+const TYPE_LABEL = { R: 'Rechtschreibung', G: 'Großschreibung am Satzanfang' };
 function renderResults(res) {
   const [rating, pillKind, scoreKind] = ratingOf(res.score);
   const t = res.time, L = res.letter;
@@ -1311,47 +1306,12 @@ function renderResults(res) {
       <td>${u.sugg.length ? `<div class="sugg">${u.sugg.map(s => `<span>${esc(s)}</span>`).join('')}</div>` : '<span class="muted">—</span>'}</td>
       ${res.cmp ? `<td>${u.similar ? `<span class="w">${esc(u.similar)}</span>` : '<span class="muted">—</span>'}</td>` : ''}
       <td>${TYPE_LABEL[u.type]}</td>
-      <td>${u.type === 'R' ? `<button type="button" class="btn btn-sm" data-addword="${esc(u.w)}">Thêm vào Từ của tôi</button>` : ''}</td>
+      <td>${u.type === 'R' ? `<button type="button" class="btn btn-sm" data-addword="${esc(u.w)}">Zu Meine Wörter hinzufügen</button>` : ''}</td>
     </tr>`).join('');
   const hintItems = res.hints.map(h => `<li><b class="w" lang="de">${esc(h.w)}</b> — ${esc(A.HINT_TEXT[h.key] || '')}</li>`).join('');
   const below0 = res.score === 0 && 100 - res.k * res.fq < 0;
-  E.paneScore.innerHTML = `
-    <div class="scorehead">
-      <div class="score ${res.spellReady ? scoreKind : ''}"><b>${res.spellReady ? res.score : '—'}</b><span>/ 100</span></div>
-      <div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${res.spellReady ? `<span class="pill ${pillKind}">${esc(rating)}</span>` : ''}<span class="muted small">${esc(dateStr(res.at))}</span></div>
-        <p class="formula">Điểm = 100 − ${res.k} × Fehlerquotient (số lỗi trên 100 từ) = 100 − ${res.k} × ${nf1.format(res.fq)}${below0 ? ', thấp nhất là 0' : ''}.</p>
-        ${res.spellReady ? '' : `<p class="formula" style="color:var(--red)">${esc(spellMissingNote())}</p>`}
-      </div>
-    </div>
-    <div class="stats">
-      <div class="stat"><div class="v">${res.words}</div><div class="k">Số từ</div></div>
-      <div class="stat"><div class="v">${res.errors}</div><div class="k">Lỗi tính điểm (${res.uniq.length} từ khác nhau)</div></div>
-      <div class="stat"><div class="v">${nf1.format(res.fq)}</div><div class="k">Fehlerquotient · lỗi / 100 từ</div></div>
-      <div class="stat"><div class="v">${t ? esc(fmt(t.used)) : '—'}</div><div class="k">${t ? 'Thời gian đã dùng / ' + esc(fmt(t.total)) : 'Không bấm giờ'}</div></div>
-      <div class="stat"><div class="v">${res.sentences}</div><div class="k">Câu (ước tính)</div></div>
-      <div class="stat"><div class="v">${res.sentences ? nf1.format(res.words / res.sentences) : '—'}</div><div class="k">Từ trung bình mỗi câu</div></div>
-    </div>
-    <div>
-      <h3>Hình thức thư</h3>
-      <div class="checks">
-        ${L.betreff ? '<span class="pill info">Có dòng Betreff</span>' : ''}
-        ${chk(L.anrede, 'Có lời chào đầu thư (Anrede)', 'Thiếu lời chào đầu thư (Anrede)')}
-        ${L.anrede ? chk(L.komma, 'Có dấu phẩy sau lời chào', 'Thiếu dấu phẩy sau lời chào') : ''}
-        ${chk(L.gruss, 'Có lời chào cuối thư (Grußformel)', 'Thiếu lời chào cuối thư (Grußformel)')}
-        <span class="pill info">${L.paragraphs} đoạn văn</span>
-        ${L.formal ? `<span class="pill">${L.formal === 'formal' ? 'Thư trang trọng (Sie)' : 'Thư thân mật (du)'}</span>` : ''}
-      </div>
-    </div>
-    ${res.leit.length ? `<div><h3>Các ý của đề (Leitpunkte) — tự đánh dấu</h3><ul class="leit">${res.leit.map((p, i) => `<li><label><input type="checkbox" data-lp="${i}"${res.leitChecked[i] ? ' checked' : ''}><span lang="de">${esc(p)}</span></label></li>`).join('')}</ul></div>` : ''}
-    <div>
-      <h3>Danh sách lỗi</h3>
-      ${res.uniq.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th>Từ trong bài</th><th>Lần</th><th>Gợi ý sửa</th>${res.cmp ? '<th>Trong bài mẫu</th>' : ''}<th>Loại</th><th></th></tr></thead><tbody lang="de">${errRows}</tbody></table></div>`
-        : `<p class="empty">${res.spellReady ? 'Không tìm thấy lỗi chính tả nào. Rất tốt!' : 'Chưa kiểm tra được chính tả.'}</p>`}
-      ${res.namesIgnored.length ? `<p class="muted small" style="margin:8px 0 0">Tên riêng không tính là lỗi (có trong đề bài, ở dòng chào hoặc ở chữ ký): <span lang="de">${res.namesIgnored.map(esc).join(', ')}</span>.</p>` : ''}
-    </div>
-    ${hintItems ? `<div><h3>Nên tự kiểm tra lại (không trừ điểm)</h3><ul class="hintlist">${hintItems}</ul></div>` : ''}
-`;
+  E.paneScore.innerHTML = `\n    <div class="scorehead">\n      <div class="score ${res.spellReady ? scoreKind : ''}"><b>${res.spellReady ? res.score : '—'}</b><span>/ 100</span></div>\n      <div>\n        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${res.spellReady ? `<span class="pill ${pillKind}">${esc(rating)}</span>` : ''}<span class="muted small">${esc(dateStr(res.at))}</span></div>\n        <p class="formula">Punkte = 100 − ${res.k} × Fehlerquotient (Fehler pro 100 Wörter) = 100 − ${res.k} × ${nf1.format(res.fq)}${below0 ? ', mindestens 0' : ''}.</p>\n        ${res.spellReady ? '' : `<p class="formula" style="color:var(--red)">${esc(spellMissingNote())}</p>`}\n      </div>\n    </div>\n    <div class="stats">\n      <div class="stat"><div class="v">${res.words}</div><div class="k">Wörter</div></div>\n      <div class="stat"><div class="v">${res.errors}</div><div class="k">Gezählte Fehler (${res.uniq.length} verschiedene Wörter)</div></div>\n      <div class="stat"><div class="v">${nf1.format(res.fq)}</div><div class="k">Fehlerquotient · Fehler / 100 Wörter</div></div>\n      <div class="stat"><div class="v">${t ? esc(fmt(t.used)) : '—'}</div><div class="k">${t ? 'Verbrauchte Zeit / ' + esc(fmt(t.total)) : 'Ohne Zeitmessung'}</div></div>\n      <div class="stat"><div class="v">${res.sentences}</div><div class="k">Sätze (geschätzt)</div></div>\n      <div class="stat"><div class="v">${res.sentences ? nf1.format(res.words / res.sentences) : '—'}</div><div class="k">Wörter pro Satz im Schnitt</div></div>\n    </div>\n    <div>\n      <h3>Briefform</h3>\n      <div class="checks">\n        ${L.betreff ? '<span class="pill info">Betreffzeile vorhanden</span>' : ''}\n        ${chk(L.anrede, 'Anrede vorhanden', 'Anrede fehlt')}\n        ${L.anrede ? chk(L.komma, 'Komma nach der Anrede', 'Kein Komma nach der Anrede') : ''}\n        ${chk(L.gruss, 'Grußformel vorhanden', 'Grußformel fehlt')}\n        <span class="pill info">${L.paragraphs} Absätze</span>\n        ${L.formal ? `<span class="pill">${L.formal === 'formal' ? 'Formeller Brief (Sie)' : 'Informeller Brief (du)'}</span>` : ''}\n      </div>\n    </div>\n    ${res.leit.length ? `<div><h3>Punkte der Aufgabe (Leitpunkte) — selbst abhaken</h3><ul class="leit">${res.leit.map((p, i) => `<li><label><input type="checkbox" data-lp="${i}"${res.leitChecked[i] ? ' checked' : ''}><span lang="de">${esc(p)}</span></label></li>`).join('')}</ul></div>` : ''}\n    <div>\n      <h3>Fehlerliste</h3>\n      ${res.uniq.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th>Wort im Text</th><th>Mal</th><th>Vorschläge</th>${res.cmp ? '<th>Im Musterbrief</th>' : ''}<th>Art</th><th></th></tr></thead><tbody lang="de">${errRows}</tbody></table></div>`
+        : `<p class="empty">${res.spellReady ? 'Keine Rechtschreibfehler gefunden. Sehr gut!' : 'Die Rechtschreibung konnte nicht geprüft werden.'}</p>`}\n      ${res.namesIgnored.length ? `<p class="muted small" style="margin:8px 0 0">Namen zählen nicht als Fehler (sie stehen in der Aufgabe, in der Anrede oder in der Unterschrift): <span lang="de">${res.namesIgnored.map(esc).join(', ')}</span>.</p>` : ''}\n    </div>\n    ${hintItems ? `<div><h3>Lieber selbst prüfen (kein Punktabzug)</h3><ul class="hintlist">${hintItems}</ul></div>` : ''}\n`;
 
   // correction view: every counted error (R / G) and every hint (?) marked in the text
   const marks = res.occ.map(o => ({ s: o.s, e: o.e, cls: 'm-err', sup: o.u.type, attr: `data-k="${res.uniq.indexOf(o.u)}"` }))
@@ -1365,13 +1325,11 @@ function renderResults(res) {
     pos = m.e;
   }
   html += esc(res.text.slice(pos));
-  E.paneCorr.innerHTML = `
-    <div class="legend"><span><i style="background:var(--red-soft);box-shadow:inset 0 -2px 0 var(--red)"></i>R — lỗi chính tả, G — thiếu viết hoa đầu câu; bấm vào để xem gợi ý</span><span><i style="background:var(--amber-soft);box-shadow:inset 0 -2px 0 var(--amber)"></i>? — nên tự kiểm tra, không trừ điểm</span></div>
-    <div class="corr" lang="de">${html}</div>`;
+  E.paneCorr.innerHTML = `\n    <div class="legend"><span><i style="background:var(--red-soft);box-shadow:inset 0 -2px 0 var(--red)"></i>R — Rechtschreibfehler, G — fehlende Großschreibung am Satzanfang; ein Klick auf ein Wort zeigt Vorschläge</span><span><i style="background:var(--amber-soft);box-shadow:inset 0 -2px 0 var(--amber)"></i>? — lieber selbst prüfen, kein Punktabzug</span></div>\n    <div class="corr" lang="de">${html}</div>`;
 
   // comparison with the model answer (offsets refer to the NFC text, exactly as analysis.js aligned it)
   if (!res.cmp) {
-    E.paneCmp.innerHTML = '<p class="empty">Chưa có bài mẫu. Dán bài mẫu vào ô „Bài mẫu“ (hoặc bấm „Mở file“), rồi bấm Chấm điểm lại để so sánh từng từ.</p>';
+    E.paneCmp.innerHTML = '<p class="empty">Noch kein Musterbrief. Fügen Sie einen Musterbrief in das Feld „Musterbrief“ ein (oder klicken Sie auf „Datei öffnen“) und klicken Sie dann erneut auf Bewerten, um Wort für Wort zu vergleichen.</p>';
     return;
   }
   const c = res.cmp, modelN = res.model.normalize('NFC');
@@ -1385,31 +1343,14 @@ function renderResults(res) {
     });
     return out + esc(text.slice(p));
   };
-  E.paneCmp.innerHTML = `
-    <div class="stats">
-      <div class="stat"><div class="v">${c.aligned ? pct(c.similarity) : '—'}</div><div class="k">Độ giống (cùng từ, cùng thứ tự)</div></div>
-      <div class="stat"><div class="v">${pct(c.coverage)}</div><div class="k">Từ vựng của bài mẫu bạn đã dùng (${c.used}/${c.uniqB.length})</div></div>
-      <div class="stat"><div class="v">${res.words} / ${A.countWords(modelN)}</div><div class="k">Số từ: bài bạn / bài mẫu</div></div>
-    </div>
-    ${c.aligned ? '' : '<p class="muted small">Hai bài quá dài để so khớp từng từ, nên chỉ có thống kê từ vựng.</p>'}
-    ${c.missing.length ? `<div><h3>Từ hay trong bài mẫu mà bài bạn chưa dùng</h3><div class="wordchips" lang="de">${c.missing.map(w => `<span>${esc(w)}</span>`).join('')}</div></div>` : ''}
-    ${c.aligned ? '<div class="legend"><span><i style="background:var(--red-soft);box-shadow:inset 0 -2px 0 var(--red)"></i>chỉ có trong bài bạn</span><span><i style="background:var(--green-soft);box-shadow:inset 0 -2px 0 var(--green)"></i>chỉ có trong bài mẫu</span><span>Chữ không tô: có ở cả hai bài, cùng thứ tự.</span></div>' : ''}
-    <div class="cmp">
-      <div class="cmp-col"><h4>Bài của bạn</h4><div class="cmp-text" lang="de">${col(res.text, c.A, c.inA, 'only-a')}</div></div>
-      <div class="cmp-col"><h4>Bài mẫu</h4><div class="cmp-text" lang="de">${col(modelN, c.B, c.inB, 'only-b')}</div></div>
-    </div>`;
+  E.paneCmp.innerHTML = `\n    <div class="stats">\n      <div class="stat"><div class="v">${c.aligned ? pct(c.similarity) : '—'}</div><div class="k">Ähnlichkeit (gleiche Wörter, gleiche Reihenfolge)</div></div>\n      <div class="stat"><div class="v">${pct(c.coverage)}</div><div class="k">Verwendeter Wortschatz des Musterbriefs (${c.used}/${c.uniqB.length})</div></div>\n      <div class="stat"><div class="v">${res.words} / ${A.countWords(modelN)}</div><div class="k">Wörter: Ihr Text / Musterbrief</div></div>\n    </div>\n    ${c.aligned ? '' : '<p class="muted small">Die beiden Texte sind zu lang für einen Wort-für-Wort-Abgleich, daher gibt es nur die Wortschatz-Statistik.</p>'}\n    ${c.missing.length ? `<div><h3>Gute Wörter aus dem Musterbrief, die Sie noch nicht verwendet haben</h3><div class="wordchips" lang="de">${c.missing.map(w => `<span>${esc(w)}</span>`).join('')}</div></div>` : ''}\n    ${c.aligned ? '<div class="legend"><span><i style="background:var(--red-soft);box-shadow:inset 0 -2px 0 var(--red)"></i>nur in Ihrem Text</span><span><i style="background:var(--green-soft);box-shadow:inset 0 -2px 0 var(--green)"></i>nur im Musterbrief</span><span>Unmarkierter Text: in beiden Texten, in derselben Reihenfolge.</span></div>' : ''}\n    <div class="cmp">\n      <div class="cmp-col"><h4>Ihr Text</h4><div class="cmp-text" lang="de">${col(res.text, c.A, c.inA, 'only-a')}</div></div>\n      <div class="cmp-col"><h4>Musterbrief</h4><div class="cmp-text" lang="de">${col(modelN, c.B, c.inB, 'only-b')}</div></div>\n    </div>`;
 }
 E.paneScore.addEventListener('change', e => {
   const cb = e.target.closest('input[data-lp]');
   if (cb && lastResult) lastResult.leitChecked[+cb.dataset.lp] = cb.checked;
 });
 function errorPopHtml(u) {
-  return `<div class="w" lang="de">${esc(u.w)}</div>
-    <div class="muted small">${u.type === 'G' ? 'Đầu câu phải viết hoa (Großschreibung am Satzanfang).' : 'Lỗi chính tả (Rechtschreibung).'} Xuất hiện ${u.n} lần.</div>
-    ${u.sugg.length ? `<div><div class="lbl">Gợi ý sửa</div><div class="sugg" lang="de">${u.sugg.map(s => `<span>${esc(s)}</span>`).join('')}</div></div>` : '<div class="muted small">Từ điển không có gợi ý.</div>'}
-    ${u.similar ? `<div><div class="lbl">Trong bài mẫu</div><span class="w" lang="de" style="font-size:16px">${esc(u.similar)}</span></div>` : ''}
-    ${u.type === 'R' ? `<div class="row"><button type="button" class="btn btn-sm" data-addword="${esc(u.w)}">Đây là từ đúng — thêm vào Từ của tôi</button></div>` : ''}
-    ${u.type === 'R' && Api.base ? `<div class="row"><button type="button" class="btn btn-sm" data-suggest="${esc(u.w)}">Đề xuất từ này cho từ điển chung</button></div>` : ''}`;
+  return `<div class="w" lang="de">${esc(u.w)}</div>\n    <div class="muted small">${u.type === 'G' ? 'Am Satzanfang wird großgeschrieben.' : 'Rechtschreibfehler.'} Vorkommen: ${u.n}.</div>\n    ${u.sugg.length ? `<div><div class="lbl">Vorschläge</div><div class="sugg" lang="de">${u.sugg.map(s => `<span>${esc(s)}</span>`).join('')}</div></div>` : '<div class="muted small">Das Wörterbuch hat keine Vorschläge.</div>'}\n    ${u.similar ? `<div><div class="lbl">Im Musterbrief</div><span class="w" lang="de" style="font-size:16px">${esc(u.similar)}</span></div>` : ''}\n    ${u.type === 'R' ? `<div class="row"><button type="button" class="btn btn-sm" data-addword="${esc(u.w)}">Das Wort ist richtig — zu Meine Wörter hinzufügen</button></div>` : ''}\n    ${u.type === 'R' && Api.base ? `<div class="row"><button type="button" class="btn btn-sm" data-suggest="${esc(u.w)}">Dieses Wort für das gemeinsame Wörterbuch vorschlagen</button></div>` : ''}`;
 }
 E.paneCorr.addEventListener('click', e => {
   const m = e.target.closest('mark');
@@ -1417,7 +1358,7 @@ E.paneCorr.addEventListener('click', e => {
   if (m.dataset.k !== undefined) { const u = lastResult.uniq[+m.dataset.k]; if (u) openPop(m, errorPopHtml(u)); }
   else if (m.dataset.h !== undefined) {
     const h = lastResult.hints[+m.dataset.h];
-    if (h) openPop(m, `<div class="w" lang="de">${esc(h.w)}</div><div class="small">${esc(A.HINT_TEXT[h.key] || '')}</div><div class="muted small">Gợi ý kiểm tra, không trừ điểm.</div>`);
+    if (h) openPop(m, `<div class="w" lang="de">${esc(h.w)}</div><div class="small">${esc(A.HINT_TEXT[h.key] || '')}</div><div class="muted small">Hinweis zum Prüfen, kein Punktabzug.</div>`);
   }
 });
 E.paneCorr.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('mark')) { e.preventDefault(); e.target.click(); } });
@@ -1432,8 +1373,8 @@ function addPersonalWord(w) {
   E.optWords.value = settings.words.join('\n');
   const refused = syncPersonalWords();
   closePop();
-  if (refused.includes(w)) { toast(`Bộ kiểm tra chính tả không nhận được từ „${w}“, nên từ này vẫn bị đánh dấu.`); return; }
-  if (regrade()) toast(`Đã thêm „${w}“ vào Từ của tôi. Kết quả đã được chấm lại.`);
+  if (refused.includes(w)) { toast(`Die Rechtschreibprüfung konnte das Wort „${w}“ nicht übernehmen, daher bleibt es markiert.`); return; }
+  if (regrade()) toast(`„${w}“ wurde zu Meine Wörter hinzugefügt. Der Text wurde neu bewertet.`);
 }
 const RES_TABS = '.tab:not(.adm-tab)';                    // the result tabs (the admin dashboard has its own)
 function selectTab(id) {
@@ -1501,7 +1442,7 @@ function putHistory(hist, entry) {                        // insert or replace o
   if (!store.set('history', hist) && !store.blocked && hist.length > 20) {   // quota full: make room, and say so
     const dropped = hist.length - 20;
     hist.length = 20;
-    if (store.set('history', hist)) toast(`Bộ nhớ của trình duyệt đã đầy: đã xóa ${dropped} lần chấm cũ nhất để lưu kết quả mới.`);
+    if (store.set('history', hist)) toast(`Der Speicher des Browsers ist voll: Die ${dropped} ältesten Bewertungen wurden gelöscht, um das neue Ergebnis zu speichern.`);
   }
   renderHistory();
   scheduleBackup();
@@ -1511,7 +1452,7 @@ function renderHistory() {
   E.btnClearHist.disabled = E.btnClearHist2.disabled = !hist.length;
   renderStorageState();
   if (!hist.length) {
-    E.histBody.innerHTML = '<p class="empty">Chưa có lần chấm nào. Mỗi lần bấm Chấm điểm, kết quả (điểm, số lỗi, thời gian) được lưu ở đây để bạn theo dõi tiến bộ.</p>';
+    E.histBody.innerHTML = '<p class="empty">Noch keine Bewertungen. Bei jedem Klick auf Bewerten wird das Ergebnis (Punkte, Fehler, Zeit) hier gespeichert, damit Sie Ihre Fortschritte verfolgen können.</p>';
     return;
   }
   const rows = hist.map((h, i) => {
@@ -1523,34 +1464,26 @@ function renderHistory() {
       trend = h.score > prev.score ? `<span class="trend-up">↑ ${h.score - prev.score}</span>` : `<span class="trend-down">↓ ${prev.score - h.score}</span>`;
     }
     const kind = h.score == null ? '' : trace ? (h.score >= 95 ? 'ok' : h.score >= 85 ? 'warn' : 'bad') : h.score >= 75 ? 'ok' : h.score >= 50 ? 'warn' : 'bad';
-    const scoreCell = trace ? `<span class="pill ${kind}" title="Tỉ lệ chữ gõ đúng khi in vết">${+h.score} %</span>`
-      : `<span class="pill ${kind}" title="Trừ ${+h.k || 10} điểm cho mỗi lỗi / 100 từ">${h.score == null ? '—' : +h.score}</span>`;
+    const scoreCell = trace ? `<span class="pill ${kind}" title="Anteil richtig getippter Buchstaben beim Nachschreiben">${+h.score} %</span>`
+      : `<span class="pill ${kind}" title="${+h.k || 10} Punkte Abzug pro Fehler / 100 Wörter">${h.score == null ? '—' : +h.score}</span>`;
     const timeCell = trace ? (h.used != null ? esc(fmt(h.used)) : '—') : h.used != null ? esc(fmt(h.used)) + ' / ' + esc(fmt(h.total)) : '—';
-    return `<tr>
-      <td style="white-space:nowrap">${esc(dateStr(h.t))}</td>
-      <td><span lang="de">${esc(h.task || '—')}</span>${trace ? ' <span class="pill info">In vết</span>' : ''}</td>
-      <td class="num">${+h.words || 0}</td>
-      <td class="num">${+h.errors || 0}</td>
-      <td class="num">${scoreCell} ${trend}</td>
-      <td class="num">${timeCell}</td>
-      <td><button type="button" class="btn btn-sm" data-reopen="${esc(h.id)}">Mở lại</button></td>
-    </tr>`;
+    return `<tr>\n      <td style="white-space:nowrap">${esc(dateStr(h.t))}</td>\n      <td><span lang="de">${esc(h.task || '—')}</span>${trace ? ' <span class="pill info">Nachschreiben</span>' : ''}</td>\n      <td class="num">${+h.words || 0}</td>\n      <td class="num">${+h.errors || 0}</td>\n      <td class="num">${scoreCell} ${trend}</td>\n      <td class="num">${timeCell}</td>\n      <td><button type="button" class="btn btn-sm" data-reopen="${esc(h.id)}">Wieder öffnen</button></td>\n    </tr>`;
   }).join('');
-  E.histBody.innerHTML = `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Ngày</th><th>Đề</th><th>Từ</th><th>Lỗi</th><th>Điểm</th><th>Thời gian</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  E.histBody.innerHTML = `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Datum</th><th>Aufgabe</th><th>Wörter</th><th>Fehler</th><th>Punkte</th><th>Zeit</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 E.histBody.addEventListener('click', async e => {
   const b = e.target.closest('[data-reopen]');
   if (!b) return;
   const h = loadHistory().find(x => x.id === b.dataset.reopen);
   if (!h) return;
-  if (active()) { toast('Đồng hồ đang chạy. Hãy nộp bài hoặc đặt lại đồng hồ trước.'); return; }
+  if (active()) { toast('Die Uhr läuft. Geben Sie zuerst ab oder setzen Sie die Uhr zurück.'); return; }
   if (h.mode === 'trace') { await reopenTrace(h); return; }
   const hasModel = typeof h.modelFull === 'string';        // entries saved before this version have no model answer
   const lose = [];
-  if (E.answer.value.trim() && E.answer.value !== h.text) lose.push('bài đang viết');
-  if (h.taskFull && E.task.value.trim() && E.task.value !== h.taskFull) lose.push('đề bài');
-  if (hasModel && E.model.value.trim() && E.model.value !== h.modelFull) lose.push('bài mẫu');
-  if (lose.length && !(await confirmBox('Mở lại bài cũ?', `${capFirst(joinVi(lose))} trên trang sẽ được thay bằng nội dung của lần chấm ngày ${dateStr(h.t)}.`, 'Mở lại'))) return;
+  if (E.answer.value.trim() && E.answer.value !== h.text) lose.push('der Text, den Sie gerade schreiben');
+  if (h.taskFull && E.task.value.trim() && E.task.value !== h.taskFull) lose.push('die Aufgabe');
+  if (hasModel && E.model.value.trim() && E.model.value !== h.modelFull) lose.push('der Musterbrief');
+  if (lose.length && !(await confirmBox('Früheren Text wieder öffnen?', `Folgendes auf der Seite wird durch den Inhalt der Bewertung vom ${dateStr(h.t)} ersetzt: ${capFirst(joinVi(lose))}.`, 'Wieder öffnen'))) return;
   if (T.state === 'done' || T.state === 'stopped') resetTimer();   // the old attempt has nothing to do with the last clock
   if (traceOn()) { settings.mode = 'free'; saveSettings(); applyMode(); }
   E.answer.value = String(h.text || '');
@@ -1572,24 +1505,24 @@ E.histBody.addEventListener('click', async e => {
     lastResult = res;
     showResult(res, true);
     applyExam();
-    toast(res.spellReady ? `Đã mở lại bài ngày ${dateStr(h.t)}, chấm lại theo từ điển và cài đặt hiện tại (lịch sử giữ nguyên).`
-      : `Đã mở lại bài ngày ${dateStr(h.t)}. Phần chính tả sẽ hiện khi từ điển tải xong.`);
+    toast(res.spellReady ? `Der Text vom ${dateStr(h.t)} wurde wieder geöffnet und mit dem aktuellen Wörterbuch und den aktuellen Einstellungen neu bewertet (der Verlauf bleibt unverändert).`
+      : `Der Text vom ${dateStr(h.t)} wurde wieder geöffnet. Die Rechtschreibung erscheint, sobald das Wörterbuch geladen ist.`);
   } catch (err) {
     lastResult = null;
-    toast('Không chấm lại được bài cũ: ' + (err && err.message || err) + '. Bấm Chấm điểm để thử lại.');
+    toast('Der frühere Text konnte nicht neu bewertet werden: ' + (err && err.message || err) + '. Klicken Sie auf Bewerten, um es erneut zu versuchen.');
   }
 });
 async function clearHistory() {
-  const linked = Backup.handle && Backup.perm === 'granted' ? ' Tệp tự sao lưu đang liên kết cũng sẽ được cập nhật theo.' : '';
-  if (!(await confirmBox('Xóa toàn bộ lịch sử?', 'Tất cả kết quả đã lưu trong trình duyệt này sẽ bị xóa. Không thể hoàn tác.' + linked, 'Xóa lịch sử', true))) return;
-  store.del('history'); currentAttempt = null; renderHistory(); scheduleBackup(); toast('Đã xóa lịch sử.');
+  const linked = Backup.handle && Backup.perm === 'granted' ? ' Die verknüpfte Datei der automatischen Sicherung wird ebenfalls aktualisiert.' : '';
+  if (!(await confirmBox('Den ganzen Verlauf löschen?', 'Alle in diesem Browser gespeicherten Ergebnisse werden gelöscht. Das kann nicht rückgängig gemacht werden.' + linked, 'Verlauf löschen', true))) return;
+  store.del('history'); currentAttempt = null; renderHistory(); scheduleBackup(); toast('Verlauf gelöscht.');
 }
 E.btnClearHist.addEventListener('click', clearHistory);
 E.btnClearHist2.addEventListener('click', clearHistory);
 
 /* ===================== configuration: scoring, personal words, data ===================== */
 function renderKExample() {
-  E.kExample.textContent = `Ví dụ: 150 từ, 3 lỗi → ${nf1.format(2)} lỗi/100 từ → ${Math.max(0, Math.round(100 - settings.k * 2))} điểm`;
+  E.kExample.textContent = `Beispiel: 150 Wörter, 3 Fehler → ${nf1.format(2)} Fehler/100 Wörter → ${Math.max(0, Math.round(100 - settings.k * 2))} Punkte`;
 }
 E.optK.addEventListener('change', () => {
   const v = Math.round(+E.optK.value);
@@ -1603,8 +1536,8 @@ E.optWords.addEventListener('change', () => {
   settings.words = [...new Set(ok)];
   E.optWords.value = settings.words.join('\n'); saveSettings();
   const refused = syncPersonalWords();
-  if (bad.length) toast(`Bỏ qua: ${bad.slice(0, 5).join(', ')} (chỉ nhận từ gồm chữ cái, dấu gạch nối hoặc dấu nháy).`);
-  else if (refused.length) toast(`Bộ kiểm tra chính tả không nhận được: ${refused.slice(0, 5).join(', ')}.`);
+  if (bad.length) toast(`Übersprungen: ${bad.slice(0, 5).join(', ')} (nur Wörter aus Buchstaben, Bindestrichen oder Apostrophen werden angenommen).`);
+  else if (refused.length) toast(`Von der Rechtschreibprüfung nicht übernommen: ${refused.slice(0, 5).join(', ')}.`);
   if (lastResult) regrade();
   renderStorageState(); renderServerUi();
 });
@@ -1613,28 +1546,28 @@ function renderStorageState() {
   E.saveWarn.hidden = !bad;
   E.storageState.style.color = bad ? 'var(--red)' : '';
   if (store.blocked) {
-    E.storageState.textContent = 'Trình duyệt đang chặn lưu dữ liệu (ví dụ cửa sổ ẩn danh hoặc cài đặt bảo mật). Bản nháp, lịch sử và cài đặt chỉ giữ đến khi đóng trang.';
+    E.storageState.textContent = 'Der Browser blockiert das Speichern (zum Beispiel ein privates Fenster oder Sicherheitseinstellungen). Entwurf, Verlauf und Einstellungen bleiben nur erhalten, bis die Seite geschlossen wird.';
     return;
   }
-  E.storageState.textContent = (store.pending ? 'Bộ nhớ của trình duyệt đã đầy: phần chưa lưu được chỉ giữ đến khi đóng trang. Hãy xóa bớt lịch sử. ' : '') +
-    `Đang lưu: bản nháp, ${loadHistory().length} lần chấm trong lịch sử, cài đặt và ${settings.words.length} từ trong „Từ của tôi“.`;
+  E.storageState.textContent = (store.pending ? 'Der Speicher des Browsers ist voll: Was nicht gespeichert werden konnte, bleibt nur erhalten, bis die Seite geschlossen wird. Löschen Sie einen Teil des Verlaufs. ' : '') +
+    `Gespeichert werden: der Entwurf, ${loadHistory().length} Bewertungen im Verlauf, die Einstellungen und ${settings.words.length} Wörter in „Meine Wörter“.`;
 }
 function renderAbout() {
   E.aboutEngine.textContent = Spell.ready
-    ? `Đang dùng: Hunspell ${Spell.version} · từ điển de_DE · ${A.EXTRA_WORDS.length} từ mới bổ sung · ${Spell.added.size} từ của bạn.`
-    : Spell.failed ? 'Từ điển chưa tải được. ' + SPELL_FAIL_HINT : Spell.slow ? 'Từ điển đang tải chậm (mạng chậm)…' : 'Đang tải từ điển…';
+    ? `Verwendet: Hunspell ${Spell.version} · Wörterbuch de_DE · ${A.EXTRA_WORDS.length} ergänzte neuere Wörter · ${Spell.added.size} eigene Wörter.`
+    : Spell.failed ? 'Das Wörterbuch konnte nicht geladen werden. ' + SPELL_FAIL_HINT : Spell.slow ? 'Das Wörterbuch lädt langsam (langsames Netz)…' : 'Wörterbuch wird geladen…';
 }
 function renderConfig() { renderSitePanel(); renderStorageState(); renderAbout(); renderServerUi(); }
 E.btnClearDraft.addEventListener('click', async () => {
-  if (active()) { toast('Đồng hồ đang chạy. Hãy nộp bài hoặc đặt lại đồng hồ trước.'); return; }
-  if (!(await confirmBox('Xóa bản nháp?', 'Bài đang viết, đề bài và bài mẫu sẽ bị xóa khỏi trang và khỏi trình duyệt này; trang nạp lại đề ví dụ. Lịch sử và cài đặt được giữ nguyên.', 'Xóa bản nháp', true))) return;
+  if (active()) { toast('Die Uhr läuft. Geben Sie zuerst ab oder setzen Sie die Uhr zurück.'); return; }
+  if (!(await confirmBox('Entwurf löschen?', 'Ihr Text, die Aufgabe und der Musterbrief werden von der Seite und aus diesem Browser entfernt; die Seite lädt wieder die Beispielaufgabe. Verlauf und Einstellungen bleiben unverändert.', 'Entwurf löschen', true))) return;
   store.del('draft');
   E.answer.value = '';
   resetTraceSession();
   loadSample('geburtstag', true);
   E.answer.dispatchEvent(new Event('input'));
   resetTimer(); lastResult = null; currentAttempt = null; E.results.hidden = true;
-  toast('Đã xóa bản nháp.');
+  toast('Entwurf gelöscht.');
 });
 E.optExam.addEventListener('change', () => { settings.exam = E.optExam.checked; saveSettings(); applyExam(); });
 E.optSound.addEventListener('change', () => {
@@ -1698,8 +1631,8 @@ function cleanEntry(h) {
 }
 function parseBackup(text) {
   let o;
-  try { o = JSON.parse(String(text).replace(/^﻿/, '')); } catch (e) { throw new ImportError('Tệp này không phải tệp sao lưu hợp lệ (nội dung JSON bị lỗi).'); }
-  if (!o || typeof o !== 'object' || o.app !== 'B1 Schreibtrainer' || o.format !== 1) throw new ImportError('Đây không phải tệp sao lưu của B1 Schreibtrainer.');
+  try { o = JSON.parse(String(text).replace(/^﻿/, '')); } catch (e) { throw new ImportError('Diese Datei ist keine gültige Sicherungsdatei (der JSON-Inhalt ist fehlerhaft).'); }
+  if (!o || typeof o !== 'object' || o.app !== 'B1 Schreibtrainer' || o.format !== 1) throw new ImportError('Dies ist keine Sicherungsdatei von B1 Schreibtrainer.');
   const hist = (Array.isArray(o.history) ? o.history : []).map(cleanEntry).filter(Boolean).slice(0, 500);
   const words = (Array.isArray(o.words) ? o.words : []).filter(w => typeof w === 'string').map(w => w.normalize('NFC')).filter(w => WORD_OK.test(w));
   const d = o.draft && typeof o.draft === 'object' ? o.draft : null;
@@ -1708,12 +1641,11 @@ function parseBackup(text) {
 }
 function backupSummary(b) {
   const at = Date.parse(b.at);
-  return `${b.hist.length} lần luyện trong lịch sử, ${b.words.length} từ trong „Từ của tôi“` + (Number.isFinite(at) ? `, lưu lúc ${dateStr(at)}` : '');
+  return `${b.hist.length} Übungen im Verlauf, ${b.words.length} Wörter in „Meine Wörter“` + (Number.isFinite(at) ? `, gespeichert am ${dateStr(at)}` : '');
 }
 function askRestore(b, title) {
-  return openModal({ title: title || 'Khôi phục từ tệp sao lưu?', html: `<p>Tệp có ${esc(backupSummary(b))}.</p>
-      <p class="small"><b>Gộp</b>: thêm vào dữ liệu hiện có, không xóa gì. <b>Thay thế</b>: lịch sử, cài đặt, „Từ của tôi“ và bản nháp trên trình duyệt này được thay bằng nội dung tệp.</p>`,
-    buttons: [{ label: 'Hủy', value: null }, { label: 'Thay thế toàn bộ', value: 'replace', danger: true }, { label: 'Gộp vào dữ liệu hiện có', value: 'merge', primary: true }] });
+  return openModal({ title: title || 'Aus der Sicherungsdatei wiederherstellen?', html: `<p>Die Datei enthält ${esc(backupSummary(b))}.</p>\n      <p class="small"><b>Zusammenführen</b>: ergänzt die vorhandenen Daten und löscht nichts. <b>Ersetzen</b>: Verlauf, Einstellungen, „Meine Wörter“ und der Entwurf in diesem Browser werden durch den Inhalt der Datei ersetzt.</p>`,
+    buttons: [{ label: 'Abbrechen', value: null }, { label: 'Alles ersetzen', value: 'replace', danger: true }, { label: 'Mit den vorhandenen Daten zusammenführen', value: 'merge', primary: true }] });
 }
 function applyBackup(b, replace) {
   const cur = replace ? [] : loadHistory(), ids = new Set(cur.map(h => h.id));
@@ -1745,8 +1677,8 @@ function applyBackup(b, replace) {
   if (lastResult) regrade();
   renderHistory(); renderStorageState(); renderServerUi();
   scheduleBackup();
-  toast(replace ? `Đã thay bằng dữ liệu trong tệp: ${hist.length} lần luyện, ${settings.words.length} từ của tôi.`
-    : `Đã gộp: thêm ${fresh.length} lần luyện và ${addedWords} từ của tôi.`);
+  toast(replace ? `Durch die Daten aus der Datei ersetzt: ${hist.length} Übungen, ${settings.words.length} eigene Wörter.`
+    : `Zusammengeführt: ${fresh.length} Übungen und ${addedWords} eigene Wörter hinzugefügt.`);
 }
 async function saveFile(name, text, mime) {
   const C = window.claude;
@@ -1757,7 +1689,7 @@ async function saveFile(name, text, mime) {
       try { await dl.save({ filename: name, data: text }); return true; }
       catch (e) {
         const code = e && e.code;
-        if (code !== 'declined') toast(code === 'rate_limited' ? 'Đang có một hộp thoại lưu tệp khác. Hãy thử lại sau.' : 'Trình duyệt không cho lưu tệp ở đây.');
+        if (code !== 'declined') toast(code === 'rate_limited' ? 'Ein anderes Dialogfenster zum Speichern ist offen. Versuchen Sie es später noch einmal.' : 'Der Browser erlaubt hier kein Speichern von Dateien.');
         return false;
       }
     }
@@ -1774,11 +1706,9 @@ async function saveFile(name, text, mime) {
 async function chooseFile(accept, types) {
   saveDraft.flush(); saveTrace.flush();
   if (settings.fileTip) {
-    const v = await openModal({ title: 'Mở hộp chọn tệp',
-      html: `<p>Hộp chọn tệp của Windows đôi khi cần vài giây mới hiện ra (thư mục OneDrive, ổ mạng, thư mục nhiều ảnh). Trong lúc đó trình duyệt có thể đứng yên: xin đừng đóng trình duyệt. Bài đang viết đã được lưu.</p>
-        <p class="small muted">Nhanh hơn: kéo thả tệp vào ô Đề bài / Bài mẫu, hoặc mở tệp bằng Word / Notepad rồi sao chép và dán.</p>
-        <label class="small" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="fileTipOff"> Không nhắc lại</label>`,
-      buttons: [{ label: 'Hủy', value: false }, { label: 'Mở hộp chọn tệp', value: true, primary: true }] });
+    const v = await openModal({ title: 'Dateiauswahl öffnen',
+      html: `<p>Die Dateiauswahl von Windows braucht manchmal einige Sekunden (OneDrive-Ordner, Netzlaufwerke, Ordner mit vielen Bildern). Währenddessen kann der Browser stillstehen: Bitte schließen Sie ihn nicht. Ihr Text ist gespeichert.</p>\n        <p class="small muted">Schneller: eine Datei in das Feld Aufgabe / Musterbrief ziehen oder die Datei in Word / im Editor öffnen, dann kopieren und einfügen.</p>\n        <label class="small" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="fileTipOff"> Nicht mehr erinnern</label>`,
+      buttons: [{ label: 'Abbrechen', value: false }, { label: 'Dateiauswahl öffnen', value: true, primary: true }] });
     const off = $('#fileTipOff', E.modal);
     if (off && off.checked) { settings.fileTip = false; saveSettings(); applyHelpers(); }
     if (!v) return null;
@@ -1791,7 +1721,7 @@ async function chooseFile(accept, types) {
   }
   return pickFile(accept);
 }
-const TEXT_TYPES = [{ description: 'Văn bản (.txt, .docx)', accept: { 'text/plain': ['.txt', '.md'], 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'] } }];
+const TEXT_TYPES = [{ description: 'Text (.txt, .docx)', accept: { 'text/plain': ['.txt', '.md'], 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'] } }];
 function pickFile(accept) {                               // resolves the chosen File, or null when cancelled
   return new Promise(resolve => {
     const inp = document.createElement('input');
@@ -1816,8 +1746,8 @@ async function writeBackup() {
   } catch (e) {
     const n = e && e.name;
     if (n === 'NotAllowedError') Backup.perm = 'prompt';
-    else Backup.error = n === 'NotFoundError' ? 'không tìm thấy tệp (đã bị xóa, đổi tên hoặc chuyển chỗ?)' : (e && e.message) || String(e);
-    if (!Backup.warned) { Backup.warned = true; toast('Chưa ghi được tệp tự sao lưu. Xem tab Cấu hình → Dữ liệu.'); }
+    else Backup.error = n === 'NotFoundError' ? 'Datei nicht gefunden (gelöscht, umbenannt oder verschoben?)' : (e && e.message) || String(e);
+    if (!Backup.warned) { Backup.warned = true; toast('Die Datei der automatischen Sicherung konnte nicht geschrieben werden. Siehe Tab Einstellungen → Daten.'); }
   } finally {
     Backup.writing = false;
     renderBackupState();
@@ -1827,20 +1757,20 @@ async function writeBackup() {
 function renderBackupState() {
   const has = !!Backup.handle;
   E.btnLink.hidden = !FS_OK;
-  setLabel(E.btnLink, has ? 'Đổi sang tệp khác' : 'Chọn tệp để tự sao lưu');
+  setLabel(E.btnLink, has ? 'Andere Datei wählen' : 'Datei für die automatische Sicherung wählen');
   E.btnUnlink.hidden = E.btnLinkRestore.hidden = !has;
   E.btnLinkAllow.hidden = !(has && Backup.perm !== 'granted');
   E.linkState.style.color = Backup.error ? 'var(--red)' : '';
   if (!FS_OK) {
-    E.linkState.textContent = IN_FRAME ? 'Ở bản trên claude.ai, trình duyệt không cho liên kết tệp. Hãy dùng „Xuất tệp sao lưu“.'
-      : 'Trình duyệt này chưa hỗ trợ liên kết tệp (cần Chrome, Edge hoặc Cốc Cốc). Hãy dùng „Xuất tệp sao lưu“ định kỳ.';
+    E.linkState.textContent = IN_FRAME ? 'In der Version auf claude.ai erlaubt der Browser keine Dateiverknüpfung. Verwenden Sie „Sicherungsdatei exportieren“.'
+      : 'Dieser Browser unterstützt noch keine Dateiverknüpfung (dafür braucht es Chrome, Edge oder Cốc Cốc). Verwenden Sie regelmäßig „Sicherungsdatei exportieren“.';
   } else if (!has) {
-    E.linkState.textContent = 'Chưa liên kết. Chọn (hoặc tạo) một tệp .json: sau mỗi lần chấm, in vết hay đổi cài đặt, dữ liệu tự được ghi vào tệp đó.';
+    E.linkState.textContent = 'Nicht verknüpft. Wählen (oder erstellen) Sie eine .json-Datei: Nach jeder Bewertung, Nachschreib-Übung oder Änderung der Einstellungen werden die Daten automatisch in diese Datei geschrieben.';
   } else if (Backup.perm !== 'granted') {
-    E.linkState.textContent = `Đã liên kết „${Backup.name}“. Mỗi lần mở trang, trình duyệt cần bạn bấm cho phép một lần thì mới ghi tiếp được.`;
+    E.linkState.textContent = `„${Backup.name}“ ist verknüpft. Bei jedem Öffnen der Seite müssen Sie dem Browser einmal erlauben, wieder in die Datei zu schreiben.`;
   } else {
-    E.linkState.textContent = `Đang tự sao lưu vào „${Backup.name}“` + (Backup.lastSaved ? ` — ghi lần cuối lúc ${new Date(Backup.lastSaved).toLocaleTimeString(LOCALE)}` : '') +
-      (Backup.error ? ` — chưa ghi được: ${Backup.error}` : '') + '.';
+    E.linkState.textContent = `Automatische Sicherung in „${Backup.name}“` + (Backup.lastSaved ? ` — zuletzt geschrieben um ${new Date(Backup.lastSaved).toLocaleTimeString(LOCALE)}` : '') +
+      (Backup.error ? ` — noch nicht geschrieben: ${Backup.error}` : '') + '.';
   }
 }
 async function initBackup() {
@@ -1851,16 +1781,16 @@ async function initBackup() {
         Backup.handle = h; Backup.name = h.name;
         Backup.perm = await h.queryPermission({ mode: 'readwrite' });
       }
-    } catch (e) { Backup.error = 'không đọc được liên kết đã lưu'; }
+    } catch (e) { Backup.error = 'die gespeicherte Verknüpfung konnte nicht gelesen werden'; }
   }
   renderBackupState();
 }
 E.btnBackupExport.addEventListener('click', () => saveFile(`b1-schreibtrainer-sao-luu-${isoLocal(Date.now()).slice(0, 10)}.json`, JSON.stringify(buildBackup(), null, 1), 'application/json'));
 E.btnBackupImport.addEventListener('click', async () => {
-  const f = await chooseFile('.json,application/json', [{ description: 'Tệp sao lưu B1 Schreibtrainer', accept: { 'application/json': ['.json'] } }]);
+  const f = await chooseFile('.json,application/json', [{ description: 'Sicherungsdatei von B1 Schreibtrainer', accept: { 'application/json': ['.json'] } }]);
   if (!f) return;
   let b;
-  try { b = parseBackup(await readText(f)); } catch (e) { toast(e instanceof ImportError ? e.message : 'Không đọc được tệp sao lưu.'); return; }
+  try { b = parseBackup(await readText(f)); } catch (e) { toast(e instanceof ImportError ? e.message : 'Die Sicherungsdatei konnte nicht gelesen werden.'); return; }
   const how = await askRestore(b);
   if (how) applyBackup(b, how === 'replace');
 });
@@ -1868,25 +1798,25 @@ E.btnLink.addEventListener('click', async () => {
   let h;
   try {
     h = await window.showSaveFilePicker({ suggestedName: 'b1-schreibtrainer-sao-luu.json', id: 'b1-backup', startIn: 'documents',
-      types: [{ description: 'Tệp sao lưu B1 Schreibtrainer', accept: { 'application/json': ['.json'] } }] });
-  } catch (e) { if (!e || e.name !== 'AbortError') toast('Không chọn được tệp: ' + (e && e.message || e)); return; }
+      types: [{ description: 'Sicherungsdatei von B1 Schreibtrainer', accept: { 'application/json': ['.json'] } }] });
+  } catch (e) { if (!e || e.name !== 'AbortError') toast('Die Datei konnte nicht gewählt werden: ' + (e && e.message || e)); return; }
   // the chosen file may already hold something: never overwrite it silently
   let kind = 'empty', b = null;
   try {
     const f = await h.getFile();
     if (f.size > 0) { try { b = parseBackup(await f.text()); kind = 'backup'; } catch (e) { kind = 'other'; } }
   } catch (e) { kind = 'empty'; }
-  if (kind === 'other' && !(await confirmBox('Tệp này đã có nội dung khác', `„${h.name}“ không phải tệp sao lưu của B1 Schreibtrainer. Ghi đè lên tệp này?`, 'Ghi đè', true))) return;
+  if (kind === 'other' && !(await confirmBox('Diese Datei hat bereits anderen Inhalt', `„${h.name}“ ist keine Sicherungsdatei von B1 Schreibtrainer. Diese Datei überschreiben?`, 'Überschreiben', true))) return;
   if (kind === 'backup') {
-    const how = await openModal({ title: 'Tệp này đã có bản sao lưu', html: `<p>„${esc(h.name)}“ có ${esc(backupSummary(b))}.</p><p class="small">Chọn cách dùng tệp trước khi bắt đầu tự sao lưu vào đó.</p>`,
-      buttons: [{ label: 'Hủy', value: null }, { label: 'Ghi đè bằng dữ liệu hiện tại', value: 'overwrite', danger: true }, { label: 'Gộp tệp vào dữ liệu hiện tại', value: 'merge', primary: true }] });
+    const how = await openModal({ title: 'Diese Datei enthält bereits eine Sicherung', html: `<p>„${esc(h.name)}“ enthält ${esc(backupSummary(b))}.</p><p class="small">Wählen Sie, wie die Datei verwendet werden soll, bevor die automatische Sicherung hineinschreibt.</p>`,
+      buttons: [{ label: 'Abbrechen', value: null }, { label: 'Mit den aktuellen Daten überschreiben', value: 'overwrite', danger: true }, { label: 'Datei mit den aktuellen Daten zusammenführen', value: 'merge', primary: true }] });
     if (!how) return;
     if (how === 'merge') applyBackup(b, false);
   }
   Backup.handle = h; Backup.name = h.name; Backup.perm = 'granted'; Backup.error = ''; Backup.warned = false;
-  try { await idbSet('backupHandle', h); } catch (e) { Backup.error = 'trình duyệt không nhớ được liên kết sau khi đóng trang'; }
+  try { await idbSet('backupHandle', h); } catch (e) { Backup.error = 'der Browser kann sich die Verknüpfung nach dem Schließen der Seite nicht merken'; }
   await writeBackup();
-  if (!Backup.error) toast(`Đã liên kết „${h.name}“. Từ giờ dữ liệu tự được sao lưu vào tệp này.`);
+  if (!Backup.error) toast(`„${h.name}“ ist verknüpft. Ab jetzt werden Ihre Daten automatisch in dieser Datei gesichert.`);
 });
 E.btnLinkAllow.addEventListener('click', async () => {
   try { Backup.perm = await Backup.handle.requestPermission({ mode: 'readwrite' }); } catch (e) { Backup.perm = 'denied'; }
@@ -1897,36 +1827,36 @@ E.btnLinkRestore.addEventListener('click', async () => {
   try {
     if ((await Backup.handle.queryPermission({ mode: 'read' })) !== 'granted' && (await Backup.handle.requestPermission({ mode: 'read' })) !== 'granted') return;
     b = parseBackup(await (await Backup.handle.getFile()).text());
-  } catch (e) { toast(e instanceof ImportError ? e.message : 'Không đọc được tệp đã liên kết: ' + (e && e.message || e)); return; }
-  const how = await askRestore(b, `Khôi phục từ „${Backup.name}“?`);
+  } catch (e) { toast(e instanceof ImportError ? e.message : 'Die verknüpfte Datei konnte nicht gelesen werden: ' + (e && e.message || e)); return; }
+  const how = await askRestore(b, `Aus „${Backup.name}“ wiederherstellen?`);
   if (how) applyBackup(b, how === 'replace');
 });
 E.btnUnlink.addEventListener('click', async () => {
-  if (!(await confirmBox('Bỏ liên kết tệp sao lưu?', `Trang sẽ ngừng tự ghi vào „${Backup.name}“. Tệp vẫn được giữ nguyên trên máy.`, 'Bỏ liên kết'))) return;
+  if (!(await confirmBox('Verknüpfung der Sicherungsdatei lösen?', `Die Seite schreibt nicht mehr in „${Backup.name}“. Die Datei bleibt unverändert auf Ihrem Computer.`, 'Verknüpfung lösen'))) return;
   try { await idbDel('backupHandle'); } catch (e) { /* nothing stored */ }
   Object.assign(Backup, { handle: null, name: '', perm: '', error: '', lastSaved: 0 });
   renderBackupState();
 });
 E.btnWordsExport.addEventListener('click', () => {
-  if (!settings.words.length) { toast('„Từ của tôi“ đang trống.'); return; }
+  if (!settings.words.length) { toast('„Meine Wörter“ ist leer.'); return; }
   saveFile('tu-cua-toi.txt', settings.words.join('\r\n') + '\r\n', 'text/plain');
 });
 E.btnWordsImport.addEventListener('click', async () => {
-  const f = await chooseFile('.txt,.dic,text/plain', [{ description: 'Danh sách từ (.txt)', accept: { 'text/plain': ['.txt', '.dic'] } }]);
+  const f = await chooseFile('.txt,.dic,text/plain', [{ description: 'Wortliste (.txt)', accept: { 'text/plain': ['.txt', '.dic'] } }]);
   if (!f) return;
   let text;
-  try { text = await readText(f); } catch (e) { toast('Không đọc được tệp.'); return; }
+  try { text = await readText(f); } catch (e) { toast('Die Datei konnte nicht gelesen werden.'); return; }
   const parts = text.replace(/\u0000/g, '').replace(/^﻿/, '').split(/[\s,;]+/).map(w => w.trim().normalize('NFC')).filter(Boolean);
   const ok = [...new Set(parts.filter(w => WORD_OK.test(w)))], bad = parts.filter(w => !WORD_OK.test(w)).length;
   const before = new Set(settings.words), added = ok.filter(w => !before.has(w));
-  if (!added.length) { toast(bad ? `Không có từ mới (bỏ qua ${bad} mục không hợp lệ).` : 'Không có từ mới trong tệp.'); return; }
+  if (!added.length) { toast(bad ? `Keine neuen Wörter (${bad} ungültige Einträge übersprungen).` : 'Keine neuen Wörter in der Datei.'); return; }
   settings.words = settings.words.concat(added);
   saveSettings();
   E.optWords.value = settings.words.join('\n');
   const refused = syncPersonalWords();
   if (lastResult) regrade();
   renderStorageState(); renderServerUi();
-  toast(`Đã thêm ${added.length} từ vào „Từ của tôi“` + (bad ? `, bỏ qua ${bad} mục không hợp lệ` : '') + (refused.length ? `; bộ kiểm tra không nhận ${refused.length} từ` : '') + '.');
+  toast(`${added.length} Wörter zu „Meine Wörter“ hinzugefügt` + (bad ? `, ${bad} ungültige Einträge übersprungen` : '') + (refused.length ? `; ${refused.length} Wörter hat die Rechtschreibprüfung nicht übernommen` : '') + '.');
 });
 
 /* ===================== the server (Cloudflare Worker + D1): contributions, reports, statistics, admin ===================== */
@@ -1957,27 +1887,27 @@ function tokenProblem(t) {
 // The server writes its messages in Vietnamese. The English and German pages (en.html, de.html) give the replies a learner
 // can meet in the page's language instead; the numbers are read from the server's sentence, whose wording stays as it is.
 // The Vietnamese page shows the server's own message.
-const FIELD_NAME = { title: 'Tên đề', task: 'Đề bài', model: 'Bài mẫu', author: 'Tên người đóng góp', message: 'Nội dung',
-  contact: 'Liên hệ', page: /*vi*/'Trang', ua: 'Trình duyệt', app: 'Phiên bản' };
+const FIELD_NAME = { title: 'Titel', task: 'Aufgabe', model: 'Musterbrief', author: 'Name der beitragenden Person', message: 'Inhalt',
+  contact: 'Kontakt', page: /*vi*/'Seite', ua: 'Browser', app: 'Version' };
 function serverText(code, msg) {
   if (LANG === 'vi' || !msg || !code) return msg;
   const n = (String(msg).match(/\d+/g) || []).map(Number);
   const field = /^invalid_(\w+)$/.exec(code);
-  if (field && FIELD_NAME[field[1]] && n.length >= 2) return `${FIELD_NAME[field[1]]} cần từ ${n[0]} đến ${n[1]} ký tự.`;
-  if (code === 'rate_limited') return 'Bạn đã gửi quá nhiều lần. Hãy thử lại sau.';
-  if (code === 'too_large') return 'Nội dung gửi lên quá dài.';
-  if (code === 'bad_json') return 'Dữ liệu gửi lên không đúng định dạng.';
-  if (code === 'score_low' && n.length >= 1) return `Bài mẫu cần đạt từ ${n[0]} điểm chính tả.`;
-  if (code === 'too_short' && n.length >= 4) return `Bài mẫu cần từ ${n[0]} từ và ${n[1]} câu trở lên (máy chủ đếm được ${n[2]} từ, ${n[3]} câu).`;
-  if (code === 'duplicate') return 'Bài mẫu này đã được gửi trước đó.';
-  if (code === 'no_words') return 'Không có từ hợp lệ (chỉ nhận chữ cái, dấu gạch nối, dấu nháy; 2–40 ký tự).';
-  if (code === 'no_schema' || code === 'no_database') return 'Máy chủ của trang đang gặp sự cố. Hãy thử lại sau.';
+  if (field && FIELD_NAME[field[1]] && n.length >= 2) return `${FIELD_NAME[field[1]]} braucht ${n[0]} bis ${n[1]} Zeichen.`;
+  if (code === 'rate_limited') return 'Sie haben zu oft gesendet. Versuchen Sie es später noch einmal.';
+  if (code === 'too_large') return 'Der gesendete Inhalt ist zu lang.';
+  if (code === 'bad_json') return 'Die gesendeten Daten haben nicht das richtige Format.';
+  if (code === 'score_low' && n.length >= 1) return `Der Musterbrief braucht mindestens ${n[0]} Rechtschreibpunkte.`;
+  if (code === 'too_short' && n.length >= 4) return `Der Musterbrief braucht mindestens ${n[0]} Wörter und ${n[1]} Sätze (der Server hat ${n[2]} Wörter, ${n[3]} Sätze gezählt).`;
+  if (code === 'duplicate') return 'Dieser Musterbrief wurde bereits gesendet.';
+  if (code === 'no_words') return 'Keine gültigen Wörter (nur Buchstaben, Bindestriche und Apostrophe; 2–40 Zeichen).';
+  if (code === 'no_schema' || code === 'no_database') return 'Der Server der Seite hat ein Problem. Versuchen Sie es später noch einmal.';
   return msg;
 }
 // Resolves with the reply object (null for 204). Rejects with an ApiError whose code says what went wrong:
 // a code from the server (unauthorized, rate_limited, invalid_*, no_schema...), timeout, network, bad_reply, bad_token, client.
 async function apiFetch(path, opts = {}) {
-  if (!Api.base) throw new ApiError('no_api', 'Trang chưa có máy chủ.');
+  if (!Api.base) throw new ApiError('no_api', 'Die Seite hat keinen Server.');
   if (opts.token && tokenProblem(opts.token)) throw new ApiError('bad_token', tokenProblem(opts.token));
   const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), opts.timeout || 12000);
   try {
@@ -1989,16 +1919,16 @@ async function apiFetch(path, opts = {}) {
     const raw = await r.text();
     let j = null;
     try { j = raw ? JSON.parse(raw) : null; } catch (e) { j = null; }
-    if (!r.ok) throw new ApiError(j && j.error || 'http_' + r.status, serverText(j && j.error, j && j.message) || `Máy chủ trả lỗi ${r.status}.`, r.status);
+    if (!r.ok) throw new ApiError(j && j.error || 'http_' + r.status, serverText(j && j.error, j && j.message) || `Der Server meldet Fehler ${r.status}.`, r.status);
     if (r.status === 204) return null;
     // a 2xx that is not a JSON object: the address answers, but it is not this server (a web page, a proxy's error page...)
-    if (!j || typeof j !== 'object' || Array.isArray(j)) throw new ApiError('bad_reply', 'Địa chỉ này trả lời nhưng không phải máy chủ B1 Schreibtrainer (dữ liệu không đúng định dạng).', r.status);
+    if (!j || typeof j !== 'object' || Array.isArray(j)) throw new ApiError('bad_reply', 'Diese Adresse antwortet, ist aber kein B1-Schreibtrainer-Server (die Daten haben das falsche Format).', r.status);
     return j;
   } catch (e) {
     if (e instanceof ApiError) throw e;
-    if (e && e.name === 'AbortError') throw new ApiError('timeout', 'Máy chủ không trả lời (quá thời gian chờ). Hãy thử lại sau.');
-    if (e instanceof TypeError) throw new ApiError('network', 'Không kết nối được máy chủ (mất mạng, hoặc địa chỉ máy chủ sai).');
-    throw new ApiError('client', 'Không gửi được yêu cầu: ' + String(e && e.message || e));
+    if (e && e.name === 'AbortError') throw new ApiError('timeout', 'Der Server antwortet nicht (Zeitüberschreitung). Versuchen Sie es später noch einmal.');
+    if (e instanceof TypeError) throw new ApiError('network', 'Keine Verbindung zum Server (kein Netz oder falsche Serveradresse).');
+    throw new ApiError('client', 'Die Anfrage konnte nicht gesendet werden: ' + String(e && e.message || e));
   } finally { clearTimeout(timer); }
 }
 // For the owner: a connection error also names the usual cause on the server side (the page's address not allowed).
@@ -2053,7 +1983,7 @@ function setCommunity(list) {
   COMMUNITY = list;
   let grp = E.sampleSel.querySelector('optgroup[data-community]');
   if (!list.length) { if (grp) grp.remove(); return; }
-  if (!grp) { grp = document.createElement('optgroup'); grp.label = 'Do người học đóng góp'; grp.dataset.community = '1'; E.sampleSel.appendChild(grp); }
+  if (!grp) { grp = document.createElement('optgroup'); grp.label = 'Von Lernenden beigetragen'; grp.dataset.community = '1'; E.sampleSel.appendChild(grp); }
   grp.textContent = '';
   for (const s of list) { const o = document.createElement('option'); o.value = s.id; o.textContent = s.title + (s.author ? ' — ' + s.author : ''); grp.appendChild(o); }
 }
@@ -2096,73 +2026,68 @@ function withoutPersonalWords(fn) {
   }
 }
 function contribErrorText(e) {
-  if (e.code === 'duplicate') return 'Bài mẫu này đã được gửi trước đó.';
-  if (e.code === 'rate_limited') return 'Từ mạng này đã có nhiều đóng góp được gửi trong 24 giờ qua (ví dụ nhiều người dùng chung một Wi-Fi), nên máy chủ tạm chưa nhận thêm. Hãy thử lại vào ngày mai.';
-  if (/^invalid_(task|model)$/.test(e.code) || e.code === 'too_short' || e.code === 'score_low') return `Máy chủ chưa nhận bài: ${e.message} Hãy sửa ô Đề bài hoặc ô Bài mẫu rồi bấm „Đóng góp“ lại.`;
+  if (e.code === 'duplicate') return 'Dieser Musterbrief wurde bereits gesendet.';
+  if (e.code === 'rate_limited') return 'Aus diesem Netz wurden in den letzten 24 Stunden schon viele Beiträge gesendet (zum Beispiel wenn viele dasselbe WLAN nutzen), daher nimmt der Server vorerst keine weiteren an. Versuchen Sie es morgen noch einmal.';
+  if (/^invalid_(task|model)$/.test(e.code) || e.code === 'too_short' || e.code === 'score_low') return `Der Server hat den Beitrag nicht angenommen: ${e.message} Korrigieren Sie das Feld Aufgabe oder Musterbrief und klicken Sie dann erneut auf „Beitragen“.`;
   return e.message;
 }
 async function contributeModel(prev) {
   if (!Api.base || contributing) return;
   const task = E.task.value.normalize('NFC').trim(), model = E.model.value.normalize('NFC').trim();
-  if (!model) { toast('Ô Bài mẫu đang trống. Hãy dán hoặc mở bài mẫu trước.'); E.model.focus(); return; }
+  if (!model) { toast('Das Feld Musterbrief ist leer. Fügen Sie zuerst einen Musterbrief ein oder öffnen Sie einen.'); E.model.focus(); return; }
   const key = sameText(model);
-  if (allSamples().some(x => x.model && sameText(x.model) === key)) { toast('Bài mẫu này đã có trong danh sách „Đề mẫu…“.'); return; }
+  if (allSamples().some(x => x.model && sameText(x.model) === key)) { toast('Dieser Musterbrief ist bereits in der Liste „Beispielaufgaben…“.'); return; }
   contributing = true;
-  setLabel(E.btnContribute, 'Đang kiểm tra…'); renderContribBtn();
+  setLabel(E.btnContribute, 'Wird geprüft…'); renderContribBtn();
   let res, personal = 0, sentences = 0;
   try {
     if (!Spell.ready && !Spell.failed && !Spell.slow) await Promise.race([ensureSpell(), sleep(15000)]);
     // the standard deduction and the strict check (ALL-CAPS words too), whatever this learner set for their own grading
     ({ value: res, personal } = withoutPersonalWords(() => runAnalysis(model, task, '', DEFAULTS.k, true)));
     sentences = A.closedSentenceCount(model);
-  } finally { contributing = false; setLabel(E.btnContribute, 'Đóng góp'); renderContribBtn(); }
+  } finally { contributing = false; setLabel(E.btnContribute, 'Beitragen'); renderContribBtn(); }
   const n = x => nfInt.format(x);
-  const own = [settings.k !== DEFAULTS.k && `tính theo mức trừ chuẩn ${DEFAULTS.k} điểm cho mỗi lỗi / 100 từ`, personal && 'không tính các từ trong „Từ của tôi“'].filter(Boolean);
+  const own = [settings.k !== DEFAULTS.k && `mit dem Standardabzug von ${DEFAULTS.k} Punkten pro Fehler / 100 Wörter`, personal && 'Wörter in „Meine Wörter“ werden nicht berücksichtigt'].filter(Boolean);
   const checks = [
-    [task.length >= RULES.TASK_MIN && task.length <= RULES.TASK_MAX, `Có đề bài, từ ${n(RULES.TASK_MIN)} đến ${n(RULES.TASK_MAX)} ký tự`,
-      task ? `hiện có ${n(task.length)} ký tự` : 'ô Đề bài đang trống'],
-    [res.words > RULES.WORDS_OVER, `Bài mẫu trên ${RULES.WORDS_OVER} từ`, `hiện có ${n(res.words)} từ`],
-    [sentences > RULES.SENTENCES_OVER, `Bài mẫu trên ${RULES.SENTENCES_OVER} câu`, `hiện có ${n(sentences)} câu kết thúc bằng dấu . ! ?`],
-    [res.spellReady && res.score >= RULES.MIN_SCORE, `Chính tả bài mẫu từ ${RULES.MIN_SCORE} điểm trở lên`,
-      res.spellReady ? [`hiện đạt ${res.score} điểm, ${res.errors} lỗi`].concat(own).join('; ')
-        : Spell.broken || Spell.failed ? 'chưa chấm được vì bộ kiểm tra chính tả chưa sẵn sàng; hãy tải lại trang rồi thử lại'
-        : 'từ điển đang tải nên chưa chấm được; hãy đợi tải xong rồi bấm „Đóng góp“ lại']
+    [task.length >= RULES.TASK_MIN && task.length <= RULES.TASK_MAX, `Eine Aufgabe mit ${n(RULES.TASK_MIN)} bis ${n(RULES.TASK_MAX)} Zeichen`,
+      task ? `derzeit ${n(task.length)} Zeichen` : 'das Feld Aufgabe ist leer'],
+    [res.words > RULES.WORDS_OVER, `Ein Musterbrief mit mehr als ${RULES.WORDS_OVER} Wörtern`, `derzeit ${n(res.words)} Wörter`],
+    [sentences > RULES.SENTENCES_OVER, `Ein Musterbrief mit mehr als ${RULES.SENTENCES_OVER} Sätzen`, `derzeit ${n(sentences)} Sätze, die mit . ! ? enden`],
+    [res.spellReady && res.score >= RULES.MIN_SCORE, `Rechtschreibpunkte des Musterbriefs: ${RULES.MIN_SCORE} oder mehr`,
+      res.spellReady ? [`derzeit ${res.score} Punkte, ${res.errors} Fehler`].concat(own).join('; ')
+        : Spell.broken || Spell.failed ? 'noch nicht bewertet, weil die Rechtschreibprüfung nicht bereit ist; laden Sie die Seite neu und versuchen Sie es noch einmal'
+        : 'noch nicht bewertet, weil das Wörterbuch noch geladen wird; warten Sie, bis es geladen ist, und klicken Sie dann erneut auf „Beitragen“']
   ];
-  if (model.length > RULES.MODEL_MAX) checks.push([false, `Bài mẫu không quá ${n(RULES.MODEL_MAX)} ký tự`, `hiện có ${n(model.length)} ký tự`]);
+  if (model.length > RULES.MODEL_MAX) checks.push([false, `Ein Musterbrief mit höchstens ${n(RULES.MODEL_MAX)} Zeichen`, `derzeit ${n(model.length)} Zeichen`]);
   const ok = checks.every(c => c[0]);
   const list = `<ul class="checklist">${checks.map(([pass, label, detail]) =>
-    `<li class="${pass ? 'ok' : 'bad'}"><span class="mark" aria-hidden="true">${pass ? '✓' : '✗'}</span><span>${esc(label)} <span class="muted">(${esc(detail)})</span><span class="sr-only">${pass ? ': đạt' : ': chưa đạt'}</span></span></li>`).join('')}</ul>`;
+    `<li class="${pass ? 'ok' : 'bad'}"><span class="mark" aria-hidden="true">${pass ? '✓' : '✗'}</span><span>${esc(label)} <span class="muted">(${esc(detail)})</span><span class="sr-only">${pass ? ': erfüllt' : ': nicht erfüllt'}</span></span></li>`).join('')}</ul>`;
   if (!ok) {
     const wrong = res.spellReady ? res.uniq.slice(0, 8).map(u => u.w) : [];
-    await openModal({ title: 'Chưa đóng góp được', html: `<p class="small">Đề bài và bài mẫu cần đạt đủ các điều kiện sau:</p>${list}` +
-      (wrong.length ? `<p class="small">Từ bị đánh dấu sai trong bài mẫu: <span lang="de">${esc(wrong.join(', '))}</span>${res.uniq.length > wrong.length ? '…' : ''}.
-        Để xem chi tiết và gợi ý sửa, dán bài mẫu vào ô Bài viết rồi bấm Chấm điểm${own.length ? ' (khi chấm bài viết, trang dùng cài đặt riêng của bạn, nên số lỗi có thể khác)' : ''}.</p>` : ''),
-      buttons: [{ label: 'Đóng', value: false, primary: true }] });
+    await openModal({ title: 'Beitrag noch nicht möglich', html: `<p class="small">Aufgabe und Musterbrief müssen alle folgenden Bedingungen erfüllen:</p>${list}` +
+      (wrong.length ? `<p class="small">Im Musterbrief als falsch markierte Wörter: <span lang="de">${esc(wrong.join(', '))}</span>${res.uniq.length > wrong.length ? '…' : ''}. Für Details und Korrekturvorschläge fügen Sie den Musterbrief in das Feld „Ihr Text“ ein und klicken auf Bewerten${own.length ? ' (beim Bewerten Ihres Textes verwendet die Seite Ihre eigenen Einstellungen, daher kann die Zahl der Fehler abweichen)' : ''}.</p>` : ''),
+      buttons: [{ label: 'Schließen', value: false, primary: true }] });
     return;
   }
-  const v = await openModal({ title: 'Đóng góp đề và bài mẫu',
-    html: `<p class="small">Nội dung ô Đề bài và ô Bài mẫu được gửi để chủ trang duyệt. Khi được duyệt, mọi người chọn được trong „Đề mẫu…“ để luyện tập.</p>${list}
-      ${prev && prev.problem ? `<p class="field-err" role="alert">${esc(prev.problem)}</p>` : ''}
-      <label class="lbl" for="cTitle">Tên đề</label><input id="cTitle" class="field" maxlength="120" value="${esc(prev ? prev.title : firstLine(task).slice(0, 120))}">
-      <label class="lbl" for="cAuthor">Tên người đóng góp (không bắt buộc)</label><input id="cAuthor" class="field" maxlength="60" autocomplete="nickname" value="${esc(prev ? prev.author : '')}">
-      <label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="cAgree"${prev && prev.agree ? ' checked' : ''}> Tôi đồng ý để đề bài và bài mẫu này được đăng công khai trên trang.</label>`,
-    buttons: [{ label: 'Hủy', value: false }, { label: 'Gửi đóng góp', value: true, primary: true }] });
+  const v = await openModal({ title: 'Aufgabe und Musterbrief beitragen',
+    html: `<p class="small">Der Inhalt der Felder Aufgabe und Musterbrief wird dem Seitenbetreiber zur Prüfung gesendet. Nach der Freigabe können alle ihn unter „Beispielaufgaben…“ zum Üben auswählen.</p>${list}\n      ${prev && prev.problem ? `<p class="field-err" role="alert">${esc(prev.problem)}</p>` : ''}\n      <label class="lbl" for="cTitle">Titel</label><input id="cTitle" class="field" maxlength="120" value="${esc(prev ? prev.title : firstLine(task).slice(0, 120))}">\n      <label class="lbl" for="cAuthor">Name der beitragenden Person (freiwillig)</label><input id="cAuthor" class="field" maxlength="60" autocomplete="nickname" value="${esc(prev ? prev.author : '')}">\n      <label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="cAgree"${prev && prev.agree ? ' checked' : ''}> Ich bin einverstanden, dass diese Aufgabe und dieser Musterbrief auf der Seite öffentlich erscheinen.</label>`,
+    buttons: [{ label: 'Abbrechen', value: false }, { label: 'Beitrag senden', value: true, primary: true }] });
   if (!v) return;
   const cur = { title: $('#cTitle', E.modal).value.trim(), author: $('#cAuthor', E.modal).value.trim(), agree: $('#cAgree', E.modal).checked };
-  if (cur.title.length < 3) return contributeModel(Object.assign(cur, { problem: 'Tên đề cần từ 3 ký tự trở lên.' }));
-  if (!cur.agree) return contributeModel(Object.assign(cur, { problem: 'Cần đồng ý đăng công khai thì mới gửi được.' }));
+  if (cur.title.length < 3) return contributeModel(Object.assign(cur, { problem: 'Der Titel braucht mindestens 3 Zeichen.' }));
+  if (!cur.agree) return contributeModel(Object.assign(cur, { problem: 'Zum Senden ist die Zustimmung zur Veröffentlichung nötig.' }));
   if (contributing) return;
   contributing = true;                                    // no second dialog while this one is on its way
-  setLabel(E.btnContribute, 'Đang gửi…'); renderContribBtn();
+  setLabel(E.btnContribute, 'Wird gesendet…'); renderContribBtn();
   let again = null;
   try {
     await apiFetch('/api/samples', { method: 'POST', body: { title: cur.title, task, model, score: res.score, author: cur.author } });
-    toast('Đã gửi đề và bài mẫu. Bài sẽ hiện trong „Đề mẫu…“ sau khi chủ trang duyệt. Cảm ơn bạn!');
+    toast('Aufgabe und Musterbrief wurden gesendet. Sie erscheinen unter „Beispielaufgaben…“, sobald der Seitenbetreiber sie geprüft hat. Vielen Dank!');
   } catch (e) {
     // a field of the form (title, name): the form again with the reason; the boxes' content: a message saying what to fix
     if (e.code === 'invalid_title' || e.code === 'invalid_author') again = Object.assign(cur, { problem: e.message });
     else toast(contribErrorText(e));
-  } finally { contributing = false; setLabel(E.btnContribute, 'Đóng góp'); renderContribBtn(); }
+  } finally { contributing = false; setLabel(E.btnContribute, 'Beitragen'); renderContribBtn(); }
   if (again) return contributeModel(again);
 }
 E.btnContribute.addEventListener('click', () => contributeModel());
@@ -2196,7 +2121,7 @@ async function loadSharedWords(force) {
 async function suggestWords(list) {
   try {
     const j = await apiFetch('/api/words', { method: 'POST', body: { words: list.slice(0, 20) } });
-    toast(`Đã gửi ${j.received} từ. Máy chủ tra Wiktionary và DWDS; từ được duyệt sẽ có trong từ điển chung của trang.`);
+    toast(`${j.received} Wörter gesendet. Der Server schlägt sie in Wiktionary und DWDS nach; freigegebene Wörter kommen in das gemeinsame Wörterbuch der Seite.`);
   } catch (e) { toast(e.message); }
 }
 document.addEventListener('click', e => {
@@ -2207,7 +2132,7 @@ document.addEventListener('click', e => {
 E.btnWordsSuggest.addEventListener('click', async () => {
   const list = settings.words.slice(0, 20);
   if (!list.length) return;
-  if (await confirmBox('Đề xuất cho từ điển chung?', `Gửi ${list.length} từ trong „Từ của tôi“ (${list.slice(0, 6).join(', ')}${list.length > 6 ? '…' : ''}) để chủ trang xem xét.`, 'Gửi đề xuất')) suggestWords(list);
+  if (await confirmBox('Für das gemeinsame Wörterbuch vorschlagen?', `${list.length} Wörter aus „Meine Wörter“ (${list.slice(0, 6).join(', ')}${list.length > 6 ? '…' : ''}) dem Seitenbetreiber zur Prüfung senden.`, 'Vorschlag senden')) suggestWords(list);
 });
 E.optStats.addEventListener('change', () => { settings.stats = E.optStats.checked; saveSettings(); });
 
@@ -2223,35 +2148,28 @@ function collectDiag(withText) {
 // problem = why the form is shown again (a message from the page or the server); nothing typed is lost
 async function reportBug(prev, problem) {
   prev = prev || { kind: 'grading', msg: '', contact: '', diag: true, text: false };
-  const kinds = [['grading', 'Chấm sai (báo lỗi nhầm hoặc bỏ sót lỗi)'], ['display', 'Hiển thị hoặc thao tác'], ['file', 'Mở / lưu tệp'], ['other', 'Khác']];
-  const v = await openModal({ title: 'Báo lỗi',
-    html: `${problem ? `<p class="field-err" role="alert">${esc(problem)}</p>` : ''}
-      <label class="lbl" for="rKind">Loại lỗi</label>
-      <select id="rKind" class="field">${kinds.map(([k, l]) => `<option value="${k}"${k === prev.kind ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>
-      <label class="lbl" for="rMsg">Mô tả (bạn đã làm gì, trang hiện ra sao)</label><textarea id="rMsg" class="field" rows="4" maxlength="4000">${esc(prev.msg)}</textarea>
-      <label class="lbl" for="rContact">Email để nhận phản hồi (không bắt buộc)</label><input id="rContact" class="field" type="email" maxlength="200" value="${esc(prev.contact)}">
-      <label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="rDiag"${prev.diag ? ' checked' : ''}> Gửi kèm thông tin kỹ thuật (trình duyệt, màn hình, phiên bản, lỗi gần nhất)</label>
-      <label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="rText"${prev.text ? ' checked' : ''}> Gửi kèm đề bài và bài đang viết (giúp tái hiện lỗi chấm)</label>
-      <p class="muted small">Hoặc gửi email trực tiếp: <a href="mailto:${CONTACT}">${CONTACT}</a></p>`,
-    buttons: [{ label: 'Hủy', value: false }, { label: Api.base ? 'Gửi báo lỗi' : 'Soạn email báo lỗi', value: true, primary: true }] });
+  const kinds = [['grading', 'Falsche Bewertung (Fehler zu Unrecht angezeigt oder übersehen)'], ['display', 'Anzeige oder Bedienung'], ['file', 'Dateien öffnen / speichern'], ['other', 'Sonstiges']];
+  const v = await openModal({ title: 'Fehler melden',
+    html: `${problem ? `<p class="field-err" role="alert">${esc(problem)}</p>` : ''}\n      <label class="lbl" for="rKind">Art des Problems</label>\n      <select id="rKind" class="field">${kinds.map(([k, l]) => `<option value="${k}"${k === prev.kind ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>\n      <label class="lbl" for="rMsg">Beschreibung (was Sie getan haben, was die Seite angezeigt hat)</label><textarea id="rMsg" class="field" rows="4" maxlength="4000">${esc(prev.msg)}</textarea>\n      <label class="lbl" for="rContact">E-Mail für eine Antwort (freiwillig)</label><input id="rContact" class="field" type="email" maxlength="200" value="${esc(prev.contact)}">\n      <label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="rDiag"${prev.diag ? ' checked' : ''}> Technische Angaben mitsenden (Browser, Bildschirm, Version, letzter Fehler)</label>\n      <label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="rText"${prev.text ? ' checked' : ''}> Aufgabe und Ihren Text mitsenden (hilft, einen Bewertungsfehler nachzuvollziehen)</label>\n      <p class="muted small">Oder direkt per E-Mail senden: <a href="mailto:${CONTACT}">${CONTACT}</a></p>`,
+    buttons: [{ label: 'Abbrechen', value: false }, { label: Api.base ? 'Meldung senden' : 'Meldung per E-Mail verfassen', value: true, primary: true }] });
   if (!v) return;
   const cur = { kind: $('#rKind', E.modal).value, msg: $('#rMsg', E.modal).value.trim(), contact: $('#rContact', E.modal).value.trim(),
     diag: $('#rDiag', E.modal).checked, text: $('#rText', E.modal).checked };
-  if (cur.msg.length < 10) return reportBug(cur, 'Hãy mô tả lỗi (ít nhất 10 ký tự).');
-  if (cur.contact && (cur.contact.length < 3 || cur.contact.length > 200)) return reportBug(cur, 'Email liên hệ cần từ 3 đến 200 ký tự, hoặc để trống.');
+  if (cur.msg.length < 10) return reportBug(cur, 'Bitte beschreiben Sie das Problem (mindestens 10 Zeichen).');
+  if (cur.contact && (cur.contact.length < 3 || cur.contact.length > 200)) return reportBug(cur, 'Die Kontakt-E-Mail braucht 3 bis 200 Zeichen, oder lassen Sie das Feld leer.');
   const diag = cur.diag || cur.text ? collectDiag(cur.text) : null;
-  let why = 'Trang chưa có máy chủ nhận báo lỗi.';
+  let why = 'Die Seite hat keinen Server, der Fehlermeldungen annimmt.';
   if (Api.base) {
     try {
       await apiFetch('/api/reports', { method: 'POST', body: { kind: cur.kind, message: cur.msg, contact: cur.contact, page: location.href.slice(0, 300),
         ua: cur.diag ? navigator.userAgent.slice(0, 400) : '', app: APP_VERSION, diag } });
-      toast('Đã gửi báo lỗi. Cảm ơn bạn!');
+      toast('Fehlermeldung gesendet. Vielen Dank!');
       return;
     } catch (e) {
       if (/^invalid_/.test(e.code)) return reportBug(cur, e.message);   // the server names the field to fix
       // too many reports from one address (a class on one network), the server down...: the e-mail route still works
-      why = e.code === 'rate_limited' ? 'Máy chủ đang tạm nhận quá nhiều báo lỗi từ cùng một mạng (ví dụ cả lớp dùng chung mạng).'
-        : 'Không gửi được qua máy chủ: ' + e.message.charAt(0).toLowerCase() + e.message.slice(1);
+      why = e.code === 'rate_limited' ? 'Der Server erhält gerade zu viele Fehlermeldungen aus demselben Netz (zum Beispiel wenn eine ganze Klasse dasselbe Netz nutzt).'
+        : 'Senden über den Server nicht möglich: ' + e.message.charAt(0).toLowerCase() + e.message.slice(1);
     }
   }
   mailReport(cur, diag, why);
@@ -2259,19 +2177,16 @@ async function reportBug(prev, problem) {
 // The e-mail route: the full text to copy (always works), and a link that opens the mail app with it (when there is one).
 function mailReport(cur, diag, why) {
   let tech = diag ? JSON.stringify(diag) : '';
-  if (tech.length > 6000) tech = tech.slice(0, 6000) + ' …(đã rút gọn)';
-  const body = `Loại lỗi: ${KIND_LABEL[cur.kind] || cur.kind}\n\n${cur.msg}\n\n` + (cur.contact ? `Liên hệ: ${cur.contact}\n` : '') + (tech ? `\nThông tin kỹ thuật: ${tech}\n` : '');
+  if (tech.length > 6000) tech = tech.slice(0, 6000) + ' …(gekürzt)';
+  const body = `Art des Problems: ${KIND_LABEL[cur.kind] || cur.kind}\n\n${cur.msg}\n\n` + (cur.contact ? `Kontakt: ${cur.contact}\n` : '') + (tech ? `\nTechnische Angaben: ${tech}\n` : '');
   // long mailto links are cut by some mail apps: the link carries the description first, the copied text is complete
-  const short = body.length > 1800 ? body.slice(0, 1800) + '\n…(đã rút gọn: hãy dán bản đầy đủ đã sao chép từ trang)' : body;
-  const href = `mailto:${CONTACT}?subject=${encodeURIComponent('Báo lỗi B1 Schreibtrainer ' + APP_VERSION)}&body=${encodeURIComponent(short)}`;
-  openModal({ title: 'Gửi báo lỗi qua email',
-    html: `<p class="small">${esc(why)} Bạn có thể gửi báo lỗi qua email đến <b>${CONTACT}</b>: mở ứng dụng email, hoặc sao chép nội dung dưới đây rồi dán vào email.</p>
-      <textarea id="mailBody" class="field" rows="7" readonly>${esc(body)}</textarea>
-      <div class="row"><a class="btn btn-primary" id="mailOpen" href="${esc(href)}" target="_blank" rel="noopener">Mở ứng dụng email</a>
-        <button type="button" class="btn" id="mailCopy">Sao chép nội dung</button></div>`,
-    buttons: [{ label: 'Đóng', value: false }] });
+  const short = body.length > 1800 ? body.slice(0, 1800) + '\n…(gekürzt: Fügen Sie den vollständigen Text ein, den Sie von der Seite kopiert haben)' : body;
+  const href = `mailto:${CONTACT}?subject=${encodeURIComponent('Fehlermeldung B1 Schreibtrainer ' + APP_VERSION)}&body=${encodeURIComponent(short)}`;
+  openModal({ title: 'Fehlermeldung per E-Mail senden',
+    html: `<p class="small">${esc(why)} Sie können die Fehlermeldung per E-Mail senden an <b>${CONTACT}</b>: Öffnen Sie Ihr E-Mail-Programm oder kopieren Sie den Text unten und fügen Sie ihn in eine E-Mail ein.</p>\n      <textarea id="mailBody" class="field" rows="7" readonly>${esc(body)}</textarea>\n      <div class="row"><a class="btn btn-primary" id="mailOpen" href="${esc(href)}" target="_blank" rel="noopener">E-Mail-Programm öffnen</a>\n        <button type="button" class="btn" id="mailCopy">Text kopieren</button></div>`,
+    buttons: [{ label: 'Schließen', value: false }] });
   $('#mailCopy', E.modal).addEventListener('click', async () => {
-    toast((await copyText(body, $('#mailBody', E.modal))) ? 'Đã sao chép nội dung báo lỗi.' : 'Không sao chép tự động được: nội dung đã được bôi đen, hãy nhấn Ctrl+C.');
+    toast((await copyText(body, $('#mailBody', E.modal))) ? 'Text der Fehlermeldung kopiert.' : 'Automatisches Kopieren nicht möglich: Der Text ist markiert, drücken Sie Strg+C.');
   });
 }
 async function copyText(text, field) {
@@ -2430,19 +2345,8 @@ function renderStats() {
   const p = st.pending || {};
   const tile = (v, k) => `<div class="tile"><div class="v">${v}</div><div class="k">${esc(k)}</div></div>`;
   chartW = E.admStats.clientWidth;
-  E.admStats.innerHTML = `
-    <div class="tiles">
-      ${tile(nfInt.format(sum('open')), 'Lượt mở trang (30 ngày)')}${tile(nfInt.format(sum('grade')), 'Lượt chấm bài')}${tile(nfInt.format(sum('trace')), 'Lượt luyện in vết')}
-      ${tile(nfInt.format(sum('report')), 'Báo lỗi gửi về')}${tile(nfInt.format(sum('error')), 'Lỗi trang tự ghi nhận')}
-      ${tile(load == null ? '—' : nf1.format(load / 1000) + ' giây', 'Tải từ điển trung bình')}${tile(gr == null ? '—' : nfInt.format(Math.round(gr)) + ' ms', 'Chấm một bài trung bình')}
-      ${tile(`${p.samples || 0} · ${p.words || 0} · ${p.reports || 0}`, 'Chờ xử lý: bài mẫu · từ · báo lỗi')}
-    </div>
-    <div><h3>Lượt mở trang mỗi ngày</h3><div class="chart" id="admChart">${barChartSvg(rows, chartW)}<div class="chart-tip" hidden></div></div></div>
-    <details><summary class="small">Xem dạng bảng</summary><div class="tbl-wrap" style="margin-top:8px"><table class="tbl"><thead><tr><th>Ngày</th><th>Mở trang</th><th>Chấm</th><th>In vết</th><th>Báo lỗi</th><th>Lỗi trang</th><th>Tải từ điển TB</th><th>Chấm TB</th></tr></thead><tbody>
-      ${rows.slice().reverse().map(r => `<tr><td>${ddmm(r.day)}</td><td class="num">${r.open}</td><td class="num">${r.grade}</td><td class="num">${r.trace}</td><td class="num">${r.report}</td><td class="num">${r.error}</td>
-        <td class="num">${r.loadN ? nf1.format(r.loadMs / r.loadN / 1000) + ' s' : '—'}</td><td class="num">${r.gradeN ? Math.round(r.gradeMs / r.gradeN) + ' ms' : '—'}</td></tr>`).join('')}
-    </tbody></table></div></details>
-    <div class="row"><button type="button" class="btn btn-sm" id="admRefresh">Tải lại số liệu</button></div>`;
+  E.admStats.innerHTML = `\n    <div class="tiles">\n      ${tile(nfInt.format(sum('open')), 'Lượt mở trang (30 ngày)')}${tile(nfInt.format(sum('grade')), 'Lượt chấm bài')}${tile(nfInt.format(sum('trace')), 'Lượt luyện in vết')}\n      ${tile(nfInt.format(sum('report')), 'Báo lỗi gửi về')}${tile(nfInt.format(sum('error')), 'Lỗi trang tự ghi nhận')}\n      ${tile(load == null ? '—' : nf1.format(load / 1000) + ' giây', 'Tải từ điển trung bình')}${tile(gr == null ? '—' : nfInt.format(Math.round(gr)) + ' ms', 'Chấm một bài trung bình')}\n      ${tile(`${p.samples || 0} · ${p.words || 0} · ${p.reports || 0}`, 'Chờ xử lý: bài mẫu · từ · báo lỗi')}\n    </div>\n    <div><h3>Lượt mở trang mỗi ngày</h3><div class="chart" id="admChart">${barChartSvg(rows, chartW)}<div class="chart-tip" hidden></div></div></div>\n    <details><summary class="small">Xem dạng bảng</summary><div class="tbl-wrap" style="margin-top:8px"><table class="tbl"><thead><tr><th>Datum</th><th>Mở trang</th><th>Chấm</th><th>Nachschreiben</th><th>Fehler melden</th><th>Lỗi trang</th><th>Tải từ điển TB</th><th>Chấm TB</th></tr></thead><tbody>\n      ${rows.slice().reverse().map(r => `<tr><td>${ddmm(r.day)}</td><td class="num">${r.open}</td><td class="num">${r.grade}</td><td class="num">${r.trace}</td><td class="num">${r.report}</td><td class="num">${r.error}</td>
+        <td class="num">${r.loadN ? nf1.format(r.loadMs / r.loadN / 1000) + ' s' : '—'}</td><td class="num">${r.gradeN ? Math.round(r.gradeMs / r.gradeN) + ' ms' : '—'}</td></tr>`).join('')}\n    </tbody></table></div></details>\n    <div class="row"><button type="button" class="btn btn-sm" id="admRefresh">Tải lại số liệu</button></div>`;
   const chart = $('#admChart', E.admStats), tip = $('.chart-tip', chart);
   const show = el => {
     const r = rows[+el.dataset.i];
@@ -2472,7 +2376,7 @@ window.addEventListener('resize', () => {
     svg.outerHTML = barChartSvg(statRows(Admin.stats), w);   // same rows: the tooltip keeps working (it reads data-i)
   }, 150);
 });
-const KIND_LABEL = { grading: 'Chấm sai', display: 'Hiển thị / thao tác', file: 'Tệp', other: 'Khác', crash: 'Lỗi trang' };
+const KIND_LABEL = { grading: 'Chấm sai', display: 'Hiển thị / thao tác', file: 'Tệp', other: 'Sonstiges', crash: 'Lỗi trang' };
 // null = that source could not be checked (no answer, an error reply): shown as such, never as "not found"
 function verdictPill(c) {
   if (!c) return '<span class="pill warn">Chưa tra</span>';
@@ -2494,10 +2398,7 @@ async function loadQueue(kind) {
     const j = await apiFetch(`/api/admin/${kind}`, { token: Admin.token });
     const items = j[kind] || [];
     if (!items.length) { box.innerHTML = '<p class="empty">Không có mục nào đang chờ.</p>'; return; }
-    if (kind === 'samples') box.innerHTML = `<ul class="queue">${items.map(x => `<li data-key="${esc(x.id)}">
-        <div><b lang="de">${esc(x.title)}</b> <span class="meta">${esc(dateStr(x.created_at))}${x.author ? ' · ' + esc(x.author) : ''} · ${+x.words} từ · ${+x.sentences} câu · ${+x.score} điểm</span></div>
-        <details><summary class="small">Xem đề và bài mẫu</summary><div class="lbl" style="margin:6px 0 4px">Đề bài</div><pre lang="de">${esc(x.task)}</pre><div class="lbl" style="margin:6px 0 4px">Bài mẫu</div><pre lang="de">${esc(x.model)}</pre></details>
-        <div class="row"><button type="button" class="btn btn-sm btn-primary" data-act="approve">Duyệt</button><button type="button" class="btn btn-sm" data-act="reject">Từ chối</button><button type="button" class="btn btn-sm btn-danger" data-act="delete">Xóa</button></div></li>`).join('')}</ul>`;
+    if (kind === 'samples') box.innerHTML = `<ul class="queue">${items.map(x => `<li data-key="${esc(x.id)}">\n        <div><b lang="de">${esc(x.title)}</b> <span class="meta">${esc(dateStr(x.created_at))}${x.author ? ' · ' + esc(x.author) : ''} · ${+x.words} từ · ${+x.sentences} câu · ${+x.score} điểm</span></div>\n        <details><summary class="small">Xem đề và bài mẫu</summary><div class="lbl" style="margin:6px 0 4px">Aufgabe</div><pre lang="de">${esc(x.task)}</pre><div class="lbl" style="margin:6px 0 4px">Musterbrief</div><pre lang="de">${esc(x.model)}</pre></details>\n        <div class="row"><button type="button" class="btn btn-sm btn-primary" data-act="approve">Duyệt</button><button type="button" class="btn btn-sm" data-act="reject">Từ chối</button><button type="button" class="btn btn-sm btn-danger" data-act="delete">Xóa</button></div></li>`).join('')}</ul>`;
     if (kind === 'words') box.innerHTML = `<ul class="queue">${items.map(x => { let c = null; try { c = x.check_json ? JSON.parse(x.check_json) : null; } catch (e) { c = null; }
       return `<li data-key="${esc(x.word)}"><div><b lang="de" style="font:600 18px var(--f-sheet)">${esc(x.word)}</b> <span class="meta">${+x.count} lần đề xuất · ${esc(dateStr(x.created_at))}</span></div>
         <div class="row">${verdictPill(c)}</div>
@@ -2545,7 +2446,7 @@ async function loadQueue(kind) {
 //             re-checked every minute); the page cannot write it, so the config tab produces its content to commit.
 // shared    - the claude.ai artifact: one shared document site/config; only owner/editors write it (db rules).
 // connecting / unavailable - artifact whose shared data is not (yet) reachable: the app stays usable.
-const DEFAULT_MSG = 'Trang đang được bảo trì. Vui lòng quay lại sau.';
+const DEFAULT_MSG = 'Die Seite wird gerade gewartet. Bitte kommen Sie später wieder.';
 const SUBTLE = !!(window.crypto && crypto.subtle && typeof crypto.subtle.digest === 'function');
 const Site = {
   mode: 'local', conf: null, local: { pinHash: '', salt: '' }, isAdmin: null,
@@ -2624,7 +2525,7 @@ function setScreen(show) {
       if (!Site.preview && T.state === 'running') { pauseTimer(); T.maintPaused = true; persistTimer(); }
       E.maintPin.value = ''; E.maintPinErr.hidden = true;
     } else {
-      if (T.maintPaused && T.state === 'paused') toast('Trang đã mở lại. Đồng hồ đang tạm dừng — bấm „Tiếp tục“ để làm bài tiếp.');
+      if (T.maintPaused && T.state === 'paused') toast('Die Seite ist wieder geöffnet. Die Uhr ist angehalten — klicken Sie auf „Fortsetzen“, um weiterzuschreiben.');
       if (T.maintPaused) { T.maintPaused = false; persistTimer(); }
     }
   }
@@ -2635,7 +2536,7 @@ function setScreen(show) {
     E.maintMsg.textContent = msg || DEFAULT_MSG;
     const left = until > 0 ? (until - Date.now()) / 1000 : 0;
     E.maintEta.hidden = !(left > 0);
-    if (left > 0) E.maintEta.textContent = `Dự kiến mở lại lúc ${dateStr(until)} (còn ${fmt(left)})`;
+    if (left > 0) E.maintEta.textContent = `Voraussichtlich wieder geöffnet um ${dateStr(until)} (noch ${fmt(left)})`;
     E.maintTimerNote.hidden = !T.maintPaused;
     const local = Site.mode === 'local';
     // no owner controls on the learner's closed screen: the owner works from quan-tri.html. Only on the claude.ai page,
@@ -2658,7 +2559,7 @@ function renderSitePanel() {
   E.sitePanel.hidden = !ownerView();
   const c = Site.conf, on = maintActive(), local = Site.mode === 'local', shared = Site.mode === 'shared';
   const stat = Site.mode === 'static';
-  if (Site.mode === 'connecting' || (stat && !Site.staticState)) pill(E.siteStatus, 'info', 'Đang kiểm tra…');
+  if (Site.mode === 'connecting' || (stat && !Site.staticState)) pill(E.siteStatus, 'info', 'Wird geprüft…');
   else if (Site.mode === 'unavailable') pill(E.siteStatus, '', 'Không đổi được ở đây');
   else if (on) pill(E.siteStatus, 'bad', 'Đang tạm đóng');
   else if (stat && Site.staticState === 'missing') pill(E.siteStatus, 'info', 'Đang mở · chưa có site.json');
@@ -2998,7 +2899,7 @@ E.btnSiteJsonCopy.addEventListener('click', async () => {
     E.siteJson.focus(); E.siteJson.select();
     let ok = false;
     try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
-    toast(ok ? 'Đã sao chép nội dung site.json.' : 'Không sao chép tự động được: nội dung đã được bôi đen, hãy nhấn Ctrl+C.');
+    toast(ok ? 'Đã sao chép nội dung site.json.' : 'Automatisches Kopieren nicht möglich: Der Text ist markiert, drücken Sie Strg+C.');
   }
 });
 E.btnSiteJsonDownload.addEventListener('click', () => {
@@ -3064,7 +2965,7 @@ E.btnStart.addEventListener('click', () => {
   else startTimer();
 });
 E.btnReset.addEventListener('click', async () => {
-  if (active() && !(await confirmBox('Đặt lại đồng hồ?', 'Lượt làm bài đang chạy sẽ bị hủy. Bài viết vẫn được giữ nguyên.', 'Đặt lại', true))) return;
+  if (active() && !(await confirmBox('Uhr zurücksetzen?', 'Der laufende Prüfungsdurchgang wird abgebrochen. Ihr Text bleibt erhalten.', 'Zurücksetzen', true))) return;
   resetTimer();
 });
 E.timeInput.addEventListener('input', () => {
@@ -3083,18 +2984,18 @@ E.btnFull.addEventListener('click', async () => {
   try {
     if (document.fullscreenElement) await document.exitFullscreen();
     else await document.documentElement.requestFullscreen();
-  } catch (e) { toast('Trình duyệt không cho phép toàn màn hình ở đây. Bạn có thể nhấn F11.'); }
+  } catch (e) { toast('Der Browser erlaubt hier kein Vollbild. Sie können F11 drücken.'); }
 });
 E.btnUnlock.addEventListener('click', () => { T.unlocked = true; persistTimer(); applyExam(); E.answer.focus(); });
 E.btnGrade.addEventListener('click', grade);
 E.btnDemo.addEventListener('click', async () => {
-  if (active()) { toast('Đồng hồ đang chạy. Hãy nộp bài hoặc đặt lại đồng hồ trước.'); return; }
+  if (active()) { toast('Die Uhr läuft. Geben Sie zuerst ab oder setzen Sie die Uhr zurück.'); return; }
   const s = SAMPLES[0];
   const lose = [];
-  if (E.answer.value.trim() && E.answer.value !== DEMO_ANSWER) lose.push('bài đang viết');
-  if (E.task.value.trim() && E.task.value !== s.task) lose.push('đề bài');
-  if (E.model.value.trim() && E.model.value !== s.model) lose.push('bài mẫu');
-  if (lose.length && !(await confirmBox('Dùng bài ví dụ?', `${capFirst(joinVi(lose))} sẽ được thay bằng đề „${s.title}“ và một bài ví dụ có vài lỗi điển hình.`, 'Dùng bài ví dụ'))) return;
+  if (E.answer.value.trim() && E.answer.value !== DEMO_ANSWER) lose.push('der Text, den Sie gerade schreiben');
+  if (E.task.value.trim() && E.task.value !== s.task) lose.push('die Aufgabe');
+  if (E.model.value.trim() && E.model.value !== s.model) lose.push('der Musterbrief');
+  if (lose.length && !(await confirmBox('Beispiel verwenden?', `Folgendes wird durch die Aufgabe „${s.title}“ und einen Beispieltext mit einigen typischen Fehlern ersetzt: ${capFirst(joinVi(lose))}.`, 'Beispiel verwenden'))) return;
   if (T.state === 'done' || T.state === 'stopped') resetTimer();   // the demo is not part of the last timed attempt
   loadSample(s.id, true);
   E.answer.value = DEMO_ANSWER;
@@ -3103,7 +3004,7 @@ E.btnDemo.addEventListener('click', async () => {
 });
 E.btnNew.addEventListener('click', async () => {
   if ((E.answer.value.trim() || active()) &&
-      !(await confirmBox('Bắt đầu bài mới?', 'Tờ giấy sẽ được xóa trắng và đồng hồ được đặt lại. Đề bài và bài mẫu vẫn giữ nguyên.', 'Bài mới', true))) return;
+      !(await confirmBox('Neuen Text beginnen?', 'Der Briefbogen wird geleert und die Uhr zurückgesetzt. Aufgabe und Musterbrief bleiben erhalten.', 'Neuer Text', true))) return;
   E.answer.value = ''; E.answer.dispatchEvent(new Event('input'));
   resetTimer(); lastResult = null; currentAttempt = null; E.results.hidden = true;
   E.answer.focus();
@@ -3114,17 +3015,17 @@ function loadSample(id, quiet) {
   if (!s) return;
   E.task.value = s.task; E.model.value = s.model;
   E.task.dispatchEvent(new Event('input')); E.model.dispatchEvent(new Event('input'));
-  E.sampleNote.textContent = id.startsWith('c:') ? `Đề và bài mẫu do người học đóng góp${s.author ? ' (' + s.author + ')' : ''}, đã được duyệt.`
-    : 'Đây là đề ví dụ. Dán đề của bạn vào ô trên, hoặc mở file .txt / .docx.';
+  E.sampleNote.textContent = id.startsWith('c:') ? `Aufgabe und Musterbrief von einer lernenden Person beigetragen${s.author ? ' (' + s.author + ')' : ''}, freigegeben.`
+    : 'Dies ist eine Beispielaufgabe. Fügen Sie Ihre eigene Aufgabe in das Feld oben ein oder öffnen Sie eine .txt- / .docx-Datei.';
   E.sampleNote.hidden = false;
-  if (!quiet) toast(s.model ? 'Đã nạp đề mẫu kèm bài mẫu.' : 'Đã nạp đề mẫu (đề này chưa có bài mẫu).');
+  if (!quiet) toast(s.model ? 'Beispielaufgabe mit Musterbrief geladen.' : 'Beispielaufgabe geladen (zu dieser Aufgabe gibt es noch keinen Musterbrief).');
 }
 E.sampleSel.addEventListener('change', async () => {
   const id = E.sampleSel.value; E.sampleSel.value = '';
   const s = allSamples().find(x => x.id === id);
   if (!s) return;
   const custom = (E.task.value.trim() && !allSamples().some(x => x.task === E.task.value)) || (E.model.value.trim() && !allSamples().some(x => x.model === E.model.value));
-  if (custom && !(await confirmBox('Nạp đề mẫu?', `Đề bài và bài mẫu hiện tại sẽ được thay bằng đề „${s.title}“.`, 'Nạp đề mẫu'))) return;
+  if (custom && !(await confirmBox('Beispielaufgabe laden?', `Die aktuelle Aufgabe und der Musterbrief werden durch die Aufgabe „${s.title}“ ersetzt.`, 'Beispielaufgabe laden'))) return;
   loadSample(id, false);
 });
 
@@ -3154,7 +3055,7 @@ function restore() {
           const rearm = () => { if (T.state === 'running') scheduleAlarms(remaining()); };
           document.addEventListener('pointerdown', rearm, { once: true });
           document.addEventListener('keydown', rearm, { once: true });
-          toast('Đồng hồ vẫn đang chạy. Nhấn vào trang để bật lại chuông báo giờ.');
+          toast('Die Uhr läuft noch. Klicken Sie auf die Seite, um die Zeitsignale wieder einzuschalten.');
         }
       }
     }
