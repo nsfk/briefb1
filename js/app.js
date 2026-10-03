@@ -69,7 +69,7 @@ const E = {
   maintBanner: $('#maintBanner'), maintBannerText: $('#maintBannerText'), btnBannerReopen: $('#btnBannerReopen'),
   task: $('#task'), model: $('#model'), answer: $('#answer'), sampleSel: $('#sampleSel'), sampleNote: $('#sampleNote'),
   btnModelToggle: $('#btnModelToggle'), modelCover: $('#modelCover'), modelCoverText: $('#modelCoverText'),
-  sheetPanel: $('.sheet-panel'), sheetTools: $('#sheetTools'), umlBar: $('#sheetTools .umlauts'),
+  sheetPanel: $('.sheet-panel'), sheetTools: $('#sheetTools'), umlBar: $('#sheetTools .umlauts'), desk: $('.desk'), btnFocus: $('#btnFocus'),
   cntWords: $('#cntWords'), cntSent: $('#cntSent'), imeWarn: $('#imeWarn'), saveWarn: $('#saveWarn'), lockNote: $('#lockNote'), btnUnlock: $('#btnUnlock'),
   btnGrade: $('#btnGrade'), btnDemo: $('#btnDemo'), btnNew: $('#btnNew'),
   results: $('#results'), staleNote: $('#staleNote'), paneScore: $('#pane-score'), paneCorr: $('#pane-corr'), paneCmp: $('#pane-cmp'),
@@ -160,12 +160,12 @@ window.addEventListener('beforeunload', e => {           // last line of defence
 });
 
 /* ===================== settings ===================== */
-const DEFAULTS = { k: 10, sound: true, exam: true, time: '30', words: [], showModel: true, mode: 'free', helpers: false, fileTip: true, stats: true };
+const DEFAULTS = { k: 10, sound: true, exam: true, time: '30', words: [], showModel: true, mode: 'free', helpers: false, fileTip: true, stats: true, focus: false };
 function cleanSettings(raw) {
   const s = Object.assign({}, DEFAULTS, raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {});
   s.k = Math.round(+s.k);
   if (!(s.k >= 1 && s.k <= 50)) s.k = DEFAULTS.k;
-  for (const b of ['sound', 'exam', 'showModel', 'helpers', 'fileTip', 'stats']) if (typeof s[b] !== 'boolean') s[b] = DEFAULTS[b];
+  for (const b of ['sound', 'exam', 'showModel', 'helpers', 'fileTip', 'stats', 'focus']) if (typeof s[b] !== 'boolean') s[b] = DEFAULTS[b];
   if (typeof s.time !== 'string' || !validSec(parseTime(s.time))) s.time = DEFAULTS.time;
   s.words = Array.isArray(s.words) ? [...new Set(s.words.filter(w => typeof w === 'string' && w).map(w => w.normalize('NFC')))] : [];
   if (s.mode !== 'trace') s.mode = 'free';
@@ -375,6 +375,30 @@ function autoGrow() {
   if (window.scrollY !== y) window.scrollTo(0, y);
 }
 
+// "Mở rộng" (focus mode): the writing sheet alone - the task and the model are hidden, the sheet gets a wider column and
+// larger writing (CSS .desk.focus). The same button brings them back; the choice is kept on this browser.
+function applyFocus() {
+  const on = !!settings.focus;
+  E.desk.classList.toggle('focus', on);
+  E.btnFocus.setAttribute('aria-pressed', String(on));
+  const label = on ? 'Thu nhỏ ô Bài viết, hiện lại Đề bài và Bài mẫu' : 'Mở rộng ô Bài viết, ẩn Đề bài và Bài mẫu';
+  E.btnFocus.title = label;
+  E.btnFocus.setAttribute('aria-label', label);
+  $('use', E.btnFocus).setAttribute('href', on ? '#i-collapse' : '#i-expand');
+}
+E.btnFocus.addEventListener('click', () => {
+  // the lines being written stay where they are on the screen (on a phone the hidden panels sit above the sheet)
+  const sheet = traceOn() ? E.traceView : E.answer, before = sheet.getBoundingClientRect().top;
+  settings.focus = !settings.focus;
+  saveSettings();
+  applyFocus();
+  autoGrow();
+  const shift = sheet.getBoundingClientRect().top - before;
+  if (Math.abs(shift) > 1) window.scrollBy(0, shift);
+  if (traceOn()) scheduleTraceLayout();                 // the hidden input follows the caret to its new place
+  requestAnimationFrame(() => { updateSticky(); updateFloat(); });
+});
+
 // While writing, keep the caret line clear of the sticky clock and toolbar (scroll-padding steers caret scrolling).
 for (const el of [E.answer, E.traceInput]) {
   el.addEventListener('focus', () => document.documentElement.classList.add('writing'));
@@ -419,10 +443,14 @@ const keepCaretSoon = () => { if (!caretFrame) caretFrame = requestAnimationFram
 E.answer.addEventListener('keyup', e => { if (/^(Arrow|Page|Home|End|Enter|Backspace|Delete)/.test(e.key)) keepCaretSoon(); });
 E.answer.addEventListener('click', keepCaretSoon);
 
-// Floating umlaut keys: for the task, the model answer and the settings fields, and for the sheet whenever its own
-// toolbar is not on screen (e.g. a phone keyboard covering the page).
-const FLOAT_FIELDS = new Set([E.task, E.model, E.optWords, E.maintMessage]);
-let floatTarget = null;
+// Umlaut keys: one set on screen at a time. The keys in the sheet's toolbar serve whichever writing field has focus (the
+// answer, the task or the model, like the Alt shortcuts) while that toolbar is on screen; the floating keys appear only
+// when it is not (a phone scrolled up to the task, "Từ của tôi" in the settings, the sheet's toolbar out of view). They
+// never show while the page is not the one in use (the address bar or another window has focus, the page is hidden or
+// being left), so they cannot linger over a page that is loading slowly. The owner's console needs no umlaut keys.
+const FLOAT_FIELDS = new Set(ADMIN_PAGE ? [] : [E.task, E.model, E.optWords, E.maintMessage]);
+const BAR_FIELDS = new Set([E.task, E.model]);            // besides the answer: fields the sheet's own keys serve
+let floatTarget = null, leaving = false;
 function toolbarOnScreen() {
   if (E.viewPractice.hidden) return false;
   const r = E.umlBar.getBoundingClientRect(), vv = window.visualViewport;
@@ -432,9 +460,9 @@ function toolbarOnScreen() {
 function updateFloat() {
   const ae = document.activeElement;
   let t = null;
-  if (!Site.screen && E.backdrop.hidden) {
-    if (FLOAT_FIELDS.has(ae) && !ae.readOnly && !ae.disabled && !ae.hidden) t = ae;
-    else if ((ae === E.answer || ae === E.traceInput) && !ae.readOnly && !toolbarOnScreen()) t = ae;
+  if (!Site.screen && E.backdrop.hidden && !leaving && !document.hidden && document.hasFocus() && ae && !ae.readOnly && !ae.disabled && !ae.hidden) {
+    const sheet = ae === E.answer || ae === E.traceInput;
+    if ((FLOAT_FIELDS.has(ae) || sheet) && !((sheet || BAR_FIELDS.has(ae)) && toolbarOnScreen())) t = ae;
   }
   floatTarget = t;
   E.umlFloat.hidden = !t;
@@ -446,11 +474,24 @@ function updateFloat() {
 }
 document.addEventListener('focusin', updateFloat);
 document.addEventListener('focusout', () => setTimeout(updateFloat, 0));
+window.addEventListener('blur', () => setTimeout(updateFloat, 0));   // e.g. the address bar: a new address is being typed
+window.addEventListener('focus', updateFloat);
+document.addEventListener('visibilitychange', updateFloat);
+// leaving the page (new address, link, reload): the last picture of this page stays on screen until the next one paints.
+// If the leaving is cancelled ("Leave site?"), the next touch, key or focus on the page brings the keys back.
+window.addEventListener('beforeunload', () => { leaving = true; updateFloat(); });
+window.addEventListener('pagehide', () => { leaving = true; updateFloat(); });
+window.addEventListener('pageshow', () => { leaving = false; updateFloat(); });   // also when the page comes back from the back/forward cache
+for (const type of ['pointerdown', 'keydown', 'focusin']) document.addEventListener(type, () => { if (leaving) { leaving = false; setTimeout(updateFloat, 0); } }, true);
 let scrollQueued = false;
 window.addEventListener('scroll', () => {
   if (scrollQueued) return;
   scrollQueued = true;
-  requestAnimationFrame(() => { scrollQueued = false; updateStuck(); if (document.activeElement === E.answer || document.activeElement === E.traceInput || floatTarget) updateFloat(); });
+  requestAnimationFrame(() => {
+    scrollQueued = false; updateStuck();
+    const ae = document.activeElement;                    // the sheet's toolbar scrolled into or out of view
+    if (ae === E.answer || ae === E.traceInput || BAR_FIELDS.has(ae) || floatTarget) updateFloat();
+  });
 }, { passive: true });
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', updateFloat);
@@ -460,7 +501,8 @@ document.addEventListener('mousedown', e => { if (e.target.closest('.uml')) e.pr
 document.addEventListener('click', e => {
   const b = e.target.closest('.uml');
   if (!b) return;
-  insertAtCaret(b.closest('#umlFloat') ? floatTarget : traceOn() ? E.traceInput : E.answer, b.dataset.ch);
+  const ae = document.activeElement;                      // the keys keep the focus where it was (mousedown above)
+  insertAtCaret(b.closest('#umlFloat') ? floatTarget : BAR_FIELDS.has(ae) ? ae : traceOn() ? E.traceInput : E.answer, b.dataset.ch);
 });
 function insertAtCaret(ta, str) {
   if (!ta || ta.readOnly || ta.disabled || ta.hidden) return;
@@ -1885,6 +1927,7 @@ E.btnWordsImport.addEventListener('click', async () => {
 
 /* ===================== the server (Cloudflare Worker + D1): contributions, reports, statistics, admin ===================== */
 const APP_VERSION = '2.1.0';
+const APP_DATE = '2026-10-03';                             // last change to the page's content (build.py: sitemap, structured data)
 // contributed model answers (the owner's plan: a task, a model answer of more than 10 sentences and more than 50 words, spelling
 // 90 or more). The server checks again what it can - lengths, its own simpler word and sentence count, the score sent - and
 // the owner reviews every contribution.
@@ -3099,6 +3142,7 @@ function restore() {
       entryId: typeof tr.entryId === 'string' ? tr.entryId : null });
   }
   applyHelpers();
+  applyFocus();                                           // before the sheet is laid out and measured
   applyMode();
   applyTimerUI();
   updateCounters();

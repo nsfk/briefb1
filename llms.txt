@@ -1,0 +1,32 @@
+# B1 Schreibtrainer
+
+> Ứng dụng web miễn phí giúp người Việt luyện viết thư tiếng Đức trình độ B1 (telc Deutsch B1, Goethe-Zertifikat B1, ÖSD Zertifikat B1): đồng hồ thi, chấm chính tả tiếng Đức kèm gợi ý sửa, so sánh với bài mẫu và luyện viết in vết. Giao diện tiếng Việt, chạy ngay trên trình duyệt, không cần tài khoản, không cần cài đặt.
+
+English summary: B1 Schreibtrainer is a free browser app for Vietnamese learners practising German B1 letter writing (telc, Goethe, ÖSD). It offers an exam timer, spell-check grading with Hunspell (de_DE) and correction suggestions, a word-by-word comparison with a model answer, and a tracing mode for copying model letters. The interface is in Vietnamese; no account or installation is needed.
+
+Chức năng chính:
+
+- Đồng hồ thi: 30 phút như phần Viết của telc B1, hoặc thời gian tự đặt; chuông báo khi còn 5 phút, 1 phút và khi hết giờ; ở chế độ thi, bài được khóa khi hết giờ và bài mẫu được che trong lúc làm bài.
+- Chấm chính tả: Hunspell 1.7.3 với từ điển de_DE (igerman98) chạy trong trình duyệt. Điểm = 100 − k × (số lỗi trên 100 từ), mặc định k = 10. Mỗi lỗi có gợi ý sửa; tên riêng trong đề bài và lời chào không bị tính là lỗi. Điểm chỉ phản ánh chính tả; ngữ pháp và nội dung không được chấm.
+- So sánh với bài mẫu: đánh dấu từng từ giống và khác, liệt kê từ của bài mẫu chưa dùng.
+- Viết in vết: bài mẫu hiện mờ, người học gõ theo; sai viết hoa, dấu câu, umlaut/ß và sai chữ hiện màu ngay.
+- Chế độ tập trung: ẩn đề bài và bài mẫu, mở rộng tờ giấy viết và phóng to chữ.
+- Đề mẫu và bài mẫu do người học đóng góp: bài mẫu cần trên 50 từ, trên 10 câu và đạt từ 90 điểm chính tả; chủ trang duyệt trước khi hiện cho mọi người.
+- Từ điển chung: người học đề xuất từ mới; chủ trang duyệt sau khi tra Wiktionary và DWDS.
+- Lịch sử luyện tập, xuất và khôi phục tệp sao lưu (.json).
+
+Dữ liệu: bản nháp, lịch sử và cài đặt chỉ lưu trong trình duyệt của người học; bài viết không được gửi đi, trừ khi người học tự gửi đóng góp hoặc đánh dấu gửi kèm bài trong báo lỗi. Thống kê sử dụng (máy chủ của trang đếm lượt mở trang và lượt chấm, không nhận nội dung bài; trang công khai còn dùng Google Tag Manager) có thể tắt trong mục Cấu hình › Dữ liệu.
+
+Tác giả: Thành Kiên — https://thanhkien.id.vn — nguyenthanhkienqt13@gmail.com. Báo lỗi: nút „Báo lỗi“ cuối trang, hoặc email ở trên.
+
+Thành phần: Hunspell 1.7.3 (MPL 1.1 / GPL 2.0 / LGPL 2.1), @farscrl/hunspell-wasm 1.0.1 (MIT), từ điển de_DE igerman98 20161207 (GPLv2 / GPLv3).
+
+## Trang
+
+- [Trang luyện viết](https://nsfk.github.io/briefb1/): toàn bộ ứng dụng; mở trên máy tính hoặc điện thoại.
+
+## Tài liệu
+
+- [humans.txt](https://nsfk.github.io/briefb1/humans.txt): thông tin tác giả và các thành phần dùng trong trang.
+- [LICENSES.txt](https://nsfk.github.io/briefb1/LICENSES.txt): giấy phép của Hunspell, hunspell-wasm và từ điển de_DE.
+- [sitemap.xml](https://nsfk.github.io/briefb1/sitemap.xml): danh sách trang cho công cụ tìm kiếm.
